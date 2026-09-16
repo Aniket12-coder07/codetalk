@@ -18,9 +18,12 @@ const getStarterCode = (q: Question, lang: SupportedLanguage): string => {
   return q.starterCode?.python || '// Speak your approach out loud before writing code\n';
 };
 
-// Dynamic host resolution to avoid IPv6 localhost refusal on Windows
+// Dynamic host resolution to avoid IPv6 localhost refusal on Windows and auto-connect on Vercel
 const getBackendUrl = () => {
   if (import.meta.env.VITE_BACKEND_URL) return import.meta.env.VITE_BACKEND_URL;
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    return 'https://backend-peach-eight-70.vercel.app';
+  }
   const host = typeof window !== 'undefined' && window.location.hostname ? window.location.hostname : '127.0.0.1';
   return `http://${host}:8000`;
 };
