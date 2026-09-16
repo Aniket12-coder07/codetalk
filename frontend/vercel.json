@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://backend-peach-eight-70.vercel.app/api/:path*"
+    },
+    {
+      "source": "/docs",
+      "destination": "https://backend-peach-eight-70.vercel.app/docs"
+    },
+    {
+      "source": "/openapi.json",
+      "destination": "https://backend-peach-eight-70.vercel.app/openapi.json"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
