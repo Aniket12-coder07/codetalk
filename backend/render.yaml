@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: codetalk-backend
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ASSEMBLYAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://codetalk.vercel.app,http://localhost:5173
