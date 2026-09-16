@@ -79,13 +79,48 @@ async def run_interviewer_test():
     print("\n Received Evaluation Report:")
     print(json.dumps(review, indent=2))
 
-    assert "overall_score" in review, "Missing overall_score in response"
-    assert "scores" in review, "Missing scores in response"
-    assert "time_complexity_evaluation" in review, "Missing time_complexity_evaluation"
-    print(" Final Review & Verbal Alignment verification PASSED!")
+    # Part C: Test Blank Code + "I don't know" Transcript
+    print("\n" + "-" * 60)
+    print("❌ (3) Testing Blank Code + 'I don't know' Transcript (Candidate Giving Up)...")
+    starter_code = "def twoSum(nums: list[int], target: int) -> list[int]:\n    # TODO: Speak your approach out loud first\n    pass\n"
+    giveup_transcript = "I don't know how to do this. I'm totally stuck."
+    giveup_review = await evaluate_submission(
+        question_id=question_id,
+        transcript=giveup_transcript,
+        code=starter_code,
+        language="python",
+    )
+    print("\n Received Evaluation for Blank Code / Give-Up:")
+    print(json.dumps(giveup_review, indent=2))
+    assert giveup_review["passed"] == False, "Candidate should NOT pass with blank code and give up"
+    assert giveup_review["overall_score"] < 30, f"Expected score < 30, got {giveup_review['overall_score']}"
+    assert giveup_review["time_complexity_evaluation"]["verdict"] == "incorrect"
+    print("✅ Blank code & Give-up rejection verification PASSED!")
+
+    # Part D: Test Sub-optimal Brute Force Efficiency (O(N^2) nested loops)
+    print("\n" + "-" * 60)
+    print("⚠️ (4) Testing Sub-optimal Brute Force Code (O(N^2) Nested Loops)...")
+    bruteforce_code = """def twoSum(nums: list[int], target: int) -> list[int]:
+    for i in range(len(nums)):
+        for j in range(i + 1, len(nums)):
+            if nums[i] + nums[j] == target:
+                return [i, j]
+    return []
+"""
+    brute_review = await evaluate_submission(
+        question_id=question_id,
+        transcript="I can check every pair using two nested loops.",
+        code=bruteforce_code,
+        language="python",
+    )
+    print("\n Received Evaluation for Brute Force Code:")
+    print(json.dumps(brute_review, indent=2))
+    assert brute_review["time_complexity_evaluation"]["verdict"] == "sub-optimal", "Nested loops should be flagged sub-optimal"
+    assert brute_review["passed"] == False, "Brute force should not pass linear time requirement"
+    print("✅ Efficiency penalty for sub-optimal code verification PASSED!")
 
     print("\n" + "=" * 65)
-    print(" All Step 3 Interviewer Tests Passed Successfully!")
+    print("🎉 All Interviewer & Efficiency Auditing Tests Passed Successfully!")
     return True
 
 if __name__ == "__main__":

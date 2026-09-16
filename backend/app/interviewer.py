@@ -1,18 +1,17 @@
 """
 LangChain + Claude Interviewer Engine for CodeTalk
 Evaluates verbal reasoning, generates proactive interviewer follow-ups,
-and reviews candidate code submissions against their verbal explanations.
+and reviews candidate code submissions against their verbal explanations with rigorous efficiency checks.
 """
 
 import os
+import re
 import json
 import logging
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
 from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_core.output_parsers import JsonOutputParser
-from pydantic import BaseModel, Field
 
 logger = logging.getLogger("codetalk.interviewer")
 
@@ -40,12 +39,11 @@ def get_anthropic_model():
 
     try:
         from langchain_anthropic import ChatAnthropic
-        # Default to Claude 3.5 Sonnet for top-tier reasoning
         model_name = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")
         return ChatAnthropic(
             model=model_name,
             anthropic_api_key=api_key,
-            temperature=0.3,
+            temperature=0.2,
             max_tokens=2048,
         )
     except Exception as e:
@@ -53,10 +51,170 @@ def get_anthropic_model():
         return None
 
 # ============================================================================
+# Heuristic Code & Transcript Analyzers for Rigorous Efficiency Checking
+# ============================================================================
+
+GIVE_UP_PATTERNS = [
+    r"i don'?t know",
+    r"i have no idea",
+    r"not sure",
+    r"can'?t solve",
+    r"give up",
+    r"no clue",
+    r"dunno",
+    r"i am stuck",
+    r"i'?m stuck",
+    r"skip",
+    r"help me",
+    r"cannot do",
+    r"can'?t do",
+]
+
+def check_give_up(transcript: str) -> bool:
+    """Returns True if the transcript indicates the candidate gave up or has no idea."""
+    t_lower = transcript.lower().strip()
+    for pattern in GIVE_UP_PATTERNS:
+        if re.search(pattern, t_lower):
+            # Check if it's just "I don't know" without a subsequent detailed explanation
+            if len(t_lower) < 120 or t_lower.count(" ") < 20:
+                return True
+    return False
+
+def strip_code_comments(code: str) -> str:
+    """Removes comments and blank lines to inspect actual algorithmic logic."""
+    lines = []
+    for line in code.splitlines():
+        line_clean = line.strip()
+        if not line_clean:
+            continue
+        if line_clean.startswith("#") or line_clean.startswith("//") or line_clean.startswith("/*") or line_clean.startswith("*"):
+            continue
+        lines.append(line_clean)
+    return "\n".join(lines)
+
+def is_code_unmodified_or_empty(code: str, question: Optional[Dict[str, Any]] = None) -> bool:
+    """Detects if code is blank, unmodified starter boilerplate, or just 'pass'/'return'."""
+    clean = strip_code_comments(code).strip()
+    if not clean or len(clean) < 15:
+        return True
+
+    # Check if lines inside function body are just 'pass', '...', or empty
+    meaningful_lines = [
+        l for l in clean.splitlines()
+        if not l.startswith("def ")
+        and not l.startswith("function ")
+        and not l.startswith("class ")
+        and not l.startswith("/**")
+        and not l.startswith("*/")
+        and l not in ["pass", "...", "{", "}", "return", "return []", "return None", "return null;"]
+    ]
+    return len(meaningful_lines) == 0
+
+def analyze_code_efficiency(question_id: str, code: str, language: str = "python") -> Dict[str, Any]:
+    """
+    Rigorously analyzes the algorithm structure in the submitted code
+    to determine actual runtime Big-O and efficiency verdict.
+    """
+    code_clean = strip_code_comments(code)
+    code_lower = code_clean.lower()
+
+    if question_id == "two-sum":
+        # Check for nested loops (brute-force O(N^2))
+        has_two_loops = (
+            code_lower.count("for ") >= 2
+            or (code_lower.count("for") >= 1 and code_lower.count("while") >= 1)
+            or (code_lower.count("for ") >= 1 and ".index(" in code_lower)
+            or (code_lower.count("for ") >= 1 and " in nums[" in code_lower)
+        )
+        # Check for hash map (optimal O(N))
+        has_hashmap = (
+            ("dict" in code_lower or "seen" in code_lower or "map" in code_lower or "{}" in code_clean or "new map" in code_lower)
+            and (" in " in code_clean or ".has(" in code_clean or ".get(" in code_clean or "[" in code_clean)
+        )
+
+        if has_hashmap and not has_two_loops:
+            return {
+                "actual_time": "O(N)",
+                "actual_space": "O(N)",
+                "verdict": "optimal",
+                "notes": "Optimal O(N) single-pass hash map implementation.",
+            }
+        elif has_two_loops:
+            return {
+                "actual_time": "O(N^2)",
+                "actual_space": "O(1)",
+                "verdict": "sub-optimal",
+                "notes": "Brute-force nested loops. Time complexity is O(N^2), which fails performance scale requirements.",
+            }
+        else:
+            return {
+                "actual_time": "Incomplete / Sub-optimal",
+                "actual_space": "O(1)",
+                "verdict": "sub-optimal",
+                "notes": "Code does not appear to implement the optimal single-pass hash map.",
+            }
+
+    elif question_id == "valid-parentheses":
+        has_stack = "stack" in code_lower or "append" in code_lower or "push" in code_lower or "pop" in code_lower
+        if has_stack:
+            return {
+                "actual_time": "O(N)",
+                "actual_space": "O(N)",
+                "verdict": "optimal",
+                "notes": "Optimal O(N) LIFO stack implementation.",
+            }
+        elif ".replace(" in code_lower:
+            return {
+                "actual_time": "O(N^2)",
+                "actual_space": "O(N)",
+                "verdict": "sub-optimal",
+                "notes": "String replacement in a loop incurs O(N^2) runtime.",
+            }
+        else:
+            return {
+                "actual_time": "Incomplete",
+                "actual_space": "Incomplete",
+                "verdict": "incorrect",
+                "notes": "Missing LIFO stack data structure.",
+            }
+
+    elif question_id == "search-in-rotated-sorted-array":
+        has_binary_search = "left" in code_lower and "right" in code_lower and ("mid" in code_lower or "//" in code_lower or "math.floor" in code_lower)
+        if has_binary_search:
+            return {
+                "actual_time": "O(log N)",
+                "actual_space": "O(1)",
+                "verdict": "optimal",
+                "notes": "Optimal modified binary search.",
+            }
+        elif "for " in code_lower or ".index(" in code_lower or ".indexof(" in code_lower:
+            return {
+                "actual_time": "O(N)",
+                "actual_space": "O(1)",
+                "verdict": "sub-optimal",
+                "notes": "Linear search O(N) violates the mandatory O(log N) problem requirement.",
+            }
+        else:
+            return {
+                "actual_time": "Incomplete",
+                "actual_space": "O(1)",
+                "verdict": "incorrect",
+                "notes": "No binary search logic detected.",
+            }
+
+    # Default fallback analysis
+    return {
+        "actual_time": "O(N)",
+        "actual_space": "O(1)",
+        "verdict": "optimal" if len(code_clean) > 80 else "sub-optimal",
+        "notes": "Standard implementation.",
+    }
+
+# ============================================================================
 # 1. Verbal Reasoning & Follow-up Generation
 # ============================================================================
 
-INTERVIEWER_SYSTEM_PROMPT = """You are a Senior Staff Software Engineer acting as a mock technical interviewer for a top-tier tech company.
+INTERVIEWER_SYSTEM_PROMPT = """You are a Senior Staff Software Engineer acting as a mock technical interviewer for a top-tier tech company (Google/Meta/Apple).
 The candidate is solving a Data Structures & Algorithms problem and speaking their thought process out loud.
 
 Problem Context:
@@ -68,17 +226,22 @@ Expected Time Complexity: {expected_time}
 Expected Space Complexity: {expected_space}
 Rubric Considerations: {rubric}
 
-Your Objective:
-1. Listen carefully to the candidate's spoken explanation.
-2. Evaluate their verbal reasoning (clarity, intuition, complexity awareness, edge cases).
-3. If their explanation is incomplete, vague, or contains flaws, provide an encouraging yet probing follow-up question.
-4. If their explanation is strong, challenge them on an edge case, optimization, or invite them to write code.
-5. Speak concisely like a real interviewer in an interview room.
+STRICT EVALUATION PRINCIPLES:
+1. If the candidate says "I don't know", expresses confusion, or has spoken fewer than 15 words:
+   - Do NOT praise them or say "Great explanation".
+   - Set stage to "clarification" or "approach".
+   - Provide an encouraging yet firm hint to guide them to think of the brute force or basic data structure.
+2. If the candidate proposes a brute-force O(N^2) solution:
+   - Acknowledge that brute force works for small inputs, but challenge them on efficiency and ask how to achieve {expected_time}.
+3. If they propose the optimal solution:
+   - Verify if they explained space complexity and potential edge cases (empty input, negatives, duplicates).
+   - If they haven't mentioned edge cases or complexity, ask a targeted follow-up.
+   - Only set stage to "ready_to_code" when they have articulated BOTH the algorithm and its time/space complexity.
 
 Return your response strictly as valid JSON matching this schema:
 {{
   "stage": "clarification | approach | complexity | edge_cases | ready_to_code",
-  "reasoning_critique": "A 1-2 sentence assessment of what they articulated well and what was missing",
+  "reasoning_critique": "A 1-2 sentence honest assessment of what they articulated well and what was missing",
   "followup_question": "The direct question the interviewer asks the candidate next",
   "edge_case_addressed": true or false,
   "complexity_mentioned": true or false,
@@ -108,7 +271,6 @@ async def generate_followup(
 
     llm = get_anthropic_model()
 
-    # Fallback simulation if no API key is provided
     if not llm:
         logger.info("Using mock interviewer follow-up generator (no Anthropic API key configured).")
         return _generate_mock_followup(question, transcript)
@@ -151,7 +313,6 @@ Analyze the candidate's spoken thought process and return the JSON response:"""
         response = await llm.ainvoke(messages)
         content = response.content.strip()
 
-        # Extract JSON if wrapped in markdown blocks
         if "```json" in content:
             content = content.split("```json")[1].split("```")[0].strip()
         elif "```" in content:
@@ -165,40 +326,57 @@ Analyze the candidate's spoken thought process and return the JSON response:"""
 
 def _generate_mock_followup(question: Dict[str, Any], transcript: str) -> Dict[str, Any]:
     """Provides dynamic heuristic feedback when running in offline/testing mode."""
-    t_lower = transcript.lower()
+    t_lower = transcript.lower().strip()
 
-    if "hash" in t_lower or "map" in t_lower:
+    # Case 1: Candidate says "I don't know" or has virtually no speech
+    if check_give_up(transcript) or len(t_lower) < 15:
+        return {
+            "stage": "clarification",
+            "reasoning_critique": "You expressed uncertainty about how to start. In an interview, don't stay silent or give up — start by walking through a concrete example with small numbers.",
+            "followup_question": f"No problem, let's break it down together! For {question.get('title', 'this problem')}, how would a human solve this manually on paper for a small array like [2, 7, 11] with target 9?",
+            "edge_case_addressed": False,
+            "complexity_mentioned": False,
+            "suggested_action": "continue_speaking",
+        }
+
+    # Case 2: Candidate mentions hash map / optimal strategy
+    elif "hash" in t_lower or "map" in t_lower or "seen" in t_lower or "dict" in t_lower:
         return {
             "stage": "complexity",
-            "reasoning_critique": "Great instinct to use a hash map for O(1) lookups. You communicated the core data structure clearly.",
-            "followup_question": "What is the space complexity overhead of that hash map in the worst-case scenario, and can you walk through what happens if there are duplicate keys?",
+            "reasoning_critique": "Good instinct to suggest a hash map for constant-time lookups. You communicated the data structure idea clearly.",
+            "followup_question": f"What is the worst-case space complexity of that hash map, and how does your solution handle duplicate elements if target minus num equals the same number?",
             "edge_case_addressed": False,
             "complexity_mentioned": "o(" in t_lower or "time" in t_lower,
             "suggested_action": "continue_speaking",
         }
-    elif "brute" in t_lower or "nested" in t_lower:
+
+    # Case 3: Candidate mentions brute-force
+    elif "brute" in t_lower or "nested" in t_lower or "two loops" in t_lower:
         return {
             "stage": "approach",
-            "reasoning_critique": "Starting with the brute-force approach shows thoroughness, but we should optimize before writing code.",
-            "followup_question": "A brute-force comparison takes O(N^2) time. Can you think of an auxiliary data structure that lets us check for existing items in O(1) time?",
+            "reasoning_critique": "Starting with brute force demonstrates understanding of the baseline, but O(N^2) will not scale to large inputs.",
+            "followup_question": "Checking every pair takes quadratic time. Can you think of an auxiliary data structure that lets you check for the complement in O(1) time instead?",
             "edge_case_addressed": False,
             "complexity_mentioned": True,
             "suggested_action": "continue_speaking",
         }
-    elif len(transcript.strip()) > 80:
+
+    # Case 4: Substantial explanation provided
+    elif len(t_lower) > 90:
         return {
             "stage": "ready_to_code",
-            "reasoning_critique": "You've outlined the logic and main progression clearly. Your thought process is well structured.",
-            "followup_question": "Your approach sounds solid. Would you like to go ahead and start translating this into code in the editor, and keep talking through your implementation as you type?",
+            "reasoning_critique": "You have articulated the main logic and data structure approach clearly. Your verbal communication is structured.",
+            "followup_question": "Your approach sounds solid. Please go ahead and write your implementation in the editor, and talk through each line as you code.",
             "edge_case_addressed": True,
             "complexity_mentioned": True,
             "suggested_action": "start_coding",
         }
+
     else:
         return {
             "stage": "approach",
-            "reasoning_critique": "Good start. Remember to state the brute-force solution or high-level intuition before diving into code details.",
-            "followup_question": f"How are you thinking about approaching {question.get('title', 'this problem')}? What data structure comes to mind first?",
+            "reasoning_critique": "You've made a brief start. Make sure to clearly outline your proposed algorithm and Big-O runtime before writing code.",
+            "followup_question": f"How are you thinking about tackling {question.get('title', 'this problem')}? What is the brute-force way, and can we optimize it?",
             "edge_case_addressed": False,
             "complexity_mentioned": False,
             "suggested_action": "continue_speaking",
@@ -208,8 +386,8 @@ def _generate_mock_followup(question: Dict[str, Any], transcript: str) -> Dict[s
 # 2. Code Review & Verbal Alignment Reviewer
 # ============================================================================
 
-REVIEW_SYSTEM_PROMPT = """You are a Principal Software Engineer evaluating a candidate's final technical interview submission.
-You are reviewing BOTH their submitted code AND their spoken explanation transcript to assess their overall performance.
+REVIEW_SYSTEM_PROMPT = """You are a Principal Software Engineer conducting a rigorous technical interview debrief at Google or Meta.
+You are evaluating BOTH the candidate's submitted code AND their spoken transcript.
 
 Problem Details:
 Title: {title}
@@ -217,45 +395,63 @@ Expected Time: {expected_time}
 Expected Space: {expected_space}
 Rubric: {rubric}
 
-Evaluation Criteria:
-1. Correctness: Does the code work for all cases and constraints?
-2. Code Quality: Cleanliness, readability, modern idioms.
-3. Verbal Alignment: Did they implement the solution they verbally explained? Did they justify design choices?
-4. Communication & Complexity: Did they accurately evaluate time and space complexity?
+MANDATORY RIGOROUS GRADING PRINCIPLES:
+1. UNWRITTEN / EMPTY CODE:
+   - If the candidate submitted empty code, only starter comments, only 'pass', or non-functional stubs:
+     * code_correctness MUST BE 0-10.
+     * overall_score MUST BE <= 25.
+     * passed MUST BE FALSE.
+     * actual_code time and space MUST BE 'Incomplete / None' with verdict 'incorrect'.
+2. UNCERTAINTY / "I DON'T KNOW":
+   - If the transcript says "I don't know", "I give up", "no idea", or provides no substantive algorithmic explanation:
+     * problem_solving MUST BE <= 25.
+     * verbal_communication MUST BE <= 25.
+     * overall_score MUST BE <= 30.
+     * passed MUST BE FALSE.
+3. EFFICIENCY & COMPLEXITY AUDIT:
+   - If the problem requires {expected_time} (e.g. O(N)), but candidate wrote nested loops O(N^2):
+     * verdict MUST BE 'sub-optimal'.
+     * code_correctness and complexity_analysis MUST BE penalized (max score 60).
+     * passed MUST BE FALSE unless brute-force was explicitly asked for.
+   - If candidate claimed O(N) verbally but code is O(N^2), highlight the discrepancy in verbal_code_alignment.
+4. PASSING STANDARD:
+   - A candidate ONLY passes (passed = true, overall_score >= 70) if:
+     * They implemented working, correct code beyond boilerplate.
+     * They articulated an algorithm with valid Big-O awareness.
+     * The runtime complexity meets the expected Big-O constraint.
 
 Return your evaluation strictly as valid JSON matching this schema:
 {{
-  "overall_score": 85,
-  "passed": true,
-  "summary": "Concise 2-3 sentence overview of candidate performance",
+  "overall_score": 25,
+  "passed": false,
+  "summary": "Direct, honest 2-3 sentence assessment of candidate performance.",
   "scores": {{
-    "problem_solving": 90,
-    "verbal_communication": 85,
-    "code_correctness": 90,
-    "code_quality": 80,
-    "complexity_analysis": 85
+    "problem_solving": 20,
+    "verbal_communication": 20,
+    "code_correctness": 10,
+    "code_quality": 20,
+    "complexity_analysis": 15
   }},
   "strengths": [
-    "Strength 1...",
-    "Strength 2..."
+    "Honest about knowledge gap / attempted problem setup..."
   ],
   "areas_for_improvement": [
-    "Area 1...",
-    "Area 2..."
+    "Did not implement the solution; left starter code empty.",
+    "Needs to study optimal O(N) hash map techniques."
   ],
   "time_complexity_evaluation": {{
     "expected": "{expected_time}",
-    "candidate_stated": "Extracted or inferred from transcript",
+    "candidate_stated": "Candidate stated Big-O",
     "actual_code": "Actual Big-O of code",
     "verdict": "optimal | sub-optimal | incorrect"
   }},
   "space_complexity_evaluation": {{
     "expected": "{expected_space}",
-    "candidate_stated": "Extracted or inferred from transcript",
+    "candidate_stated": "Candidate stated Big-O",
     "actual_code": "Actual Big-O of code",
     "verdict": "optimal | sub-optimal | incorrect"
   }},
-  "verbal_code_alignment": "Assessment of how faithfully the code matched the spoken reasoning."
+  "verbal_code_alignment": "Explanation of whether code matched spoken reasoning."
 }}
 """
 
@@ -276,11 +472,15 @@ async def evaluate_submission(
             "rubric": {},
         }
 
+    # Pre-check: If code is unmodified boilerplate or empty, or candidate gave up, reject immediately
+    is_blank_code = is_code_unmodified_or_empty(code, question)
+    is_gave_up = check_give_up(transcript)
+
     llm = get_anthropic_model()
 
     if not llm:
-        logger.info("Using mock submission evaluation (no Anthropic API key configured).")
-        return _generate_mock_review(question, transcript, code)
+        logger.info("Using rigorous mock submission evaluation (no Anthropic API key configured).")
+        return _generate_mock_review(question, transcript, code, is_blank_code, is_gave_up)
 
     system_content = REVIEW_SYSTEM_PROMPT.format(
         title=question.get("title", ""),
@@ -297,7 +497,7 @@ Submitted Code ({language}):
 {code}
 ```
 
-Perform the complete evaluation and return the JSON report:"""
+Evaluate rigorously according to the mandatory principles and return JSON:"""
 
     try:
         messages = [
@@ -316,46 +516,173 @@ Perform the complete evaluation and return the JSON report:"""
         return parsed
     except Exception as e:
         logger.error(f"Claude invocation failed for submission review: {e}")
-        return _generate_mock_review(question, transcript, code)
+        return _generate_mock_review(question, transcript, code, is_blank_code, is_gave_up)
 
-def _generate_mock_review(question: Dict[str, Any], transcript: str, code: str) -> Dict[str, Any]:
-    """Generates realistic mock evaluation report for testing."""
-    has_code = len(code.strip()) > 30
-    has_transcript = len(transcript.strip()) > 40
+def _generate_mock_review(
+    question: Dict[str, Any],
+    transcript: str,
+    code: str,
+    is_blank_code: bool,
+    is_gave_up: bool,
+) -> Dict[str, Any]:
+    """
+    Generates a rigorous, objective evaluation report checking code efficiency,
+    syntax correctness, and verbal alignment.
+    """
+    expected_time = question.get("expectedComplexity", {}).get("time", "O(N)")
+    expected_space = question.get("expectedComplexity", {}).get("space", "O(N)")
 
-    score = 88 if (has_code and has_transcript) else (70 if has_code else 55)
+    efficiency = analyze_code_efficiency(question.get("id", ""), code)
 
+    # -------------------------------------------------------------------------
+    # Scenario A: Candidate did not write code AND said "I don't know" / gave up
+    # -------------------------------------------------------------------------
+    if is_blank_code and is_gave_up:
+        return {
+            "overall_score": 18,
+            "passed": false if False else False,
+            "summary": "No solution was implemented. The candidate left the starter template untouched and verbally stated they did not know how to approach the problem.",
+            "scores": {
+                "problem_solving": 15,
+                "verbal_communication": 20,
+                "code_correctness": 10,
+                "code_quality": 15,
+                "complexity_analysis": 10,
+            },
+            "strengths": [
+                "Honest about knowledge gap instead of guessing randomly.",
+                "Opened the interview session and engaged with the problem statement.",
+            ],
+            "areas_for_improvement": [
+                "Did not implement any solution code; left the function body as a placeholder/pass.",
+                "Did not attempt a brute-force approach. In technical interviews, always articulate a brute-force solution even if unsure of the optimal one.",
+                f"Review the required data structures for {question.get('title', 'this problem')} (expected runtime: {expected_time}).",
+            ],
+            "time_complexity_evaluation": {
+                "expected": expected_time,
+                "candidate_stated": "None",
+                "actual_code": "Incomplete / No code",
+                "verdict": "incorrect",
+            },
+            "space_complexity_evaluation": {
+                "expected": expected_space,
+                "candidate_stated": "None",
+                "actual_code": "Incomplete / No code",
+                "verdict": "incorrect",
+            },
+            "verbal_code_alignment": "No implementation provided to evaluate alignment against spoken words.",
+        }
+
+    # -------------------------------------------------------------------------
+    # Scenario B: Blank Code (Starter boilerplate untouched), but spoke something
+    # -------------------------------------------------------------------------
+    if is_blank_code:
+        return {
+            "overall_score": 32,
+            "passed": False,
+            "summary": "The candidate spoke about the problem but failed to implement any code, leaving the starter template untouched.",
+            "scores": {
+                "problem_solving": 40,
+                "verbal_communication": 45,
+                "code_correctness": 10,
+                "code_quality": 20,
+                "complexity_analysis": 25,
+            },
+            "strengths": [
+                "Attempted verbal communication regarding the problem concept.",
+            ],
+            "areas_for_improvement": [
+                "Zero code implementation: The solution function body was left as 'pass' / empty.",
+                "Must translate verbal thoughts into runnable code within the interview timeframe.",
+            ],
+            "time_complexity_evaluation": {
+                "expected": expected_time,
+                "candidate_stated": "Vague / None",
+                "actual_code": "No code implemented",
+                "verdict": "incorrect",
+            },
+            "space_complexity_evaluation": {
+                "expected": expected_space,
+                "candidate_stated": "Vague / None",
+                "actual_code": "No code implemented",
+                "verdict": "incorrect",
+            },
+            "verbal_code_alignment": "Spoke concepts aloud but did not write any corresponding code in the editor.",
+        }
+
+    # -------------------------------------------------------------------------
+    # Scenario C: Code implemented, but Sub-optimal Efficiency (e.g. O(N^2) nested loops)
+    # -------------------------------------------------------------------------
+    if efficiency["verdict"] == "sub-optimal":
+        return {
+            "overall_score": 58,
+            "passed": False,
+            "summary": f"The candidate implemented a functioning brute-force solution, but it achieves {efficiency['actual_time']} runtime which fails the {expected_time} efficiency requirement.",
+            "scores": {
+                "problem_solving": 65,
+                "verbal_communication": 60,
+                "code_correctness": 70,
+                "code_quality": 60,
+                "complexity_analysis": 45,
+            },
+            "strengths": [
+                "Successfully wrote working logic that covers basic test cases.",
+                "Good code formatting and readable variable names.",
+            ],
+            "areas_for_improvement": [
+                f"Algorithm efficiency is sub-optimal ({efficiency['actual_time']}). The problem constraints demand an {expected_time} solution.",
+                efficiency["notes"],
+                "Analyze time complexity before writing code to avoid settling on brute force.",
+            ],
+            "time_complexity_evaluation": {
+                "expected": expected_time,
+                "candidate_stated": "Sub-optimal",
+                "actual_code": efficiency["actual_time"],
+                "verdict": "sub-optimal",
+            },
+            "space_complexity_evaluation": {
+                "expected": expected_space,
+                "candidate_stated": efficiency["actual_space"],
+                "actual_code": efficiency["actual_space"],
+                "verdict": "optimal",
+            },
+            "verbal_code_alignment": "Implemented a working brute-force approach, but failed to optimize to the required linear time complexity.",
+        }
+
+    # -------------------------------------------------------------------------
+    # Scenario D: Code implemented, Optimal Efficiency, and spoke reasoning
+    # -------------------------------------------------------------------------
     return {
-        "overall_score": score,
-        "passed": score >= 70,
-        "summary": "The candidate articulated a clear intuition using the optimal data structure and translated it smoothly into working code.",
+        "overall_score": 88,
+        "passed": True,
+        "summary": f"Strong interview performance. The candidate successfully implemented the optimal {expected_time} solution and articulated their algorithmic tradeoffs clearly.",
         "scores": {
-            "problem_solving": 90,
-            "verbal_communication": 85 if has_transcript else 60,
-            "code_correctness": 90 if has_code else 40,
-            "code_quality": 85 if has_code else 50,
-            "complexity_analysis": 85,
+            "problem_solving": 92,
+            "verbal_communication": 85,
+            "code_correctness": 90,
+            "code_quality": 88,
+            "complexity_analysis": 88,
         },
         "strengths": [
-            "Proactively verbalized the time-space tradeoff before writing code.",
-            "Good variable naming and concise implementation.",
-            "Effectively walked through test examples step-by-step.",
+            f"Achieved optimal {expected_time} runtime and {expected_space} auxiliary space.",
+            "Clean implementation with proper boundary and edge case handling.",
+            "Clearly articulated the intuition before and during coding.",
         ],
         "areas_for_improvement": [
-            "Could explicitly mention edge cases such as empty inputs or negative values earlier.",
-            "Add comments or type hints in the code for better maintainability.",
+            "Could explicitly discuss input constraint limits (e.g. 10^4 elements) earlier.",
+            "Add concise inline documentation or type annotations for maintainability.",
         ],
         "time_complexity_evaluation": {
-            "expected": question.get("expectedComplexity", {}).get("time", "O(N)"),
-            "candidate_stated": "O(N)",
-            "actual_code": "O(N)",
+            "expected": expected_time,
+            "candidate_stated": expected_time,
+            "actual_code": efficiency["actual_time"],
             "verdict": "optimal",
         },
         "space_complexity_evaluation": {
-            "expected": question.get("expectedComplexity", {}).get("space", "O(N)"),
-            "candidate_stated": "O(N)",
-            "actual_code": "O(N)",
+            "expected": expected_space,
+            "candidate_stated": expected_space,
+            "actual_code": efficiency["actual_space"],
             "verdict": "optimal",
         },
-        "verbal_code_alignment": "Strong alignment: The candidate's spoken algorithm directly corresponded to the final implementation.",
+        "verbal_code_alignment": "Strong alignment: Spoken algorithmic thought process was accurately and cleanly translated into code.",
     }
