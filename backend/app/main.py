@@ -62,6 +62,24 @@ def load_questions() -> List[Dict[str, Any]]:
             questions_cache = []
     return questions_cache
 
+@app.get("/")
+async def root():
+    """Root landing endpoint providing API status and documentation links."""
+    questions = load_questions()
+    return {
+        "message": "Welcome to CodeTalk API - Voice-Based Technical Interview Simulator",
+        "status": "online",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "endpoints": {
+            "health": "/api/health",
+            "questions": "/api/questions",
+            "reasoning": "/api/interview/reasoning",
+            "review": "/api/interview/review"
+        },
+        "questions_loaded": len(questions)
+    }
+
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint indicating API and key status."""
