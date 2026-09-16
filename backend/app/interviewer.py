@@ -93,7 +93,7 @@ def strip_code_comments(code: str) -> str:
     return "\n".join(lines)
 
 def is_code_unmodified_or_empty(code: str, question: Optional[Dict[str, Any]] = None) -> bool:
-    """Detects if code is blank, unmodified starter boilerplate, or just 'pass'/'return'."""
+    """Detects if code is blank, unmodified starter boilerplate, or just 'pass'/'return' across Python, JS, TS, Java, C++, and Go."""
     clean = strip_code_comments(code).strip()
     if not clean or len(clean) < 15:
         return True
@@ -104,9 +104,17 @@ def is_code_unmodified_or_empty(code: str, question: Optional[Dict[str, Any]] = 
         if not l.startswith("def ")
         and not l.startswith("function ")
         and not l.startswith("class ")
+        and not l.startswith("public ")
+        and not l.startswith("private ")
+        and not l.startswith("func ")
+        and not l.startswith("package ")
+        and not l.startswith("import ")
+        and not l.startswith("#include")
+        and not l.startswith("using ")
         and not l.startswith("/**")
         and not l.startswith("*/")
-        and l not in ["pass", "...", "{", "}", "return", "return []", "return None", "return null;"]
+        and not l.startswith("type ")
+        and l not in ["pass", "...", "{", "}", "};", "return", "return []", "return None", "return null;", "return 0;", "return false;", "return 0.0;", "return -1;"]
     ]
     return len(meaningful_lines) == 0
 
@@ -391,22 +399,24 @@ You are evaluating BOTH the candidate's submitted code AND their spoken transcri
 
 Problem Details:
 Title: {title}
+Difficulty: {difficulty}
 Expected Time: {expected_time}
 Expected Space: {expected_space}
 Rubric: {rubric}
 
 MANDATORY RIGOROUS GRADING PRINCIPLES:
-1. UNWRITTEN / EMPTY CODE:
-   - If the candidate submitted empty code, only starter comments, only 'pass', or non-functional stubs:
-     * code_correctness MUST BE 0-10.
-     * overall_score MUST BE <= 25.
+1. UNATTEMPTED QUESTIONS / UNWRITTEN CODE (EASY, MEDIUM, OR HARD):
+   - If the candidate submitted empty code, only starter comments/templates, only 'pass', or non-functional boilerplate stubs:
+     * This question is UNATTEMPTED.
+     * overall_score MUST BE between 0 and 5 (inclusive, out of 100) across all difficulties (Easy, Medium, or Hard). NEVER exceed 5.
+     * All sub-scores (problem_solving, verbal_communication, code_correctness, code_quality, complexity_analysis) MUST BE between 0 and 5.
      * passed MUST BE FALSE.
-     * actual_code time and space MUST BE 'Incomplete / None' with verdict 'incorrect'.
-2. UNCERTAINTY / "I DON'T KNOW":
-   - If the transcript says "I don't know", "I give up", "no idea", or provides no substantive algorithmic explanation:
-     * problem_solving MUST BE <= 25.
-     * verbal_communication MUST BE <= 25.
-     * overall_score MUST BE <= 30.
+     * actual_code time and space MUST BE 'Incomplete / Unattempted' with verdict 'incorrect'.
+2. "I DON'T KNOW" / GIVING UP / BLANK ANSWERS (EASY, MEDIUM, OR HARD):
+   - If the candidate's answer or transcript says "I don't know", "I give up", "no idea", or provides no substantive algorithmic explanation:
+     * This is an "I don't know" / gave up response.
+     * overall_score MUST BE between 0 and 5 (inclusive, out of 100) across all difficulties (Easy, Medium, or Hard). NEVER exceed 5.
+     * All sub-scores (problem_solving, verbal_communication, code_correctness, code_quality, complexity_analysis) MUST BE between 0 and 5.
      * passed MUST BE FALSE.
 3. EFFICIENCY & COMPLEXITY AUDIT:
    - If the problem requires {expected_time} (e.g. O(N)), but candidate wrote nested loops O(N^2):
@@ -422,15 +432,15 @@ MANDATORY RIGOROUS GRADING PRINCIPLES:
 
 Return your evaluation strictly as valid JSON matching this schema:
 {{
-  "overall_score": 25,
+  "overall_score": 2,
   "passed": false,
   "summary": "Direct, honest 2-3 sentence assessment of candidate performance.",
   "scores": {{
-    "problem_solving": 20,
-    "verbal_communication": 20,
-    "code_correctness": 10,
-    "code_quality": 20,
-    "complexity_analysis": 15
+    "problem_solving": 2,
+    "verbal_communication": 3,
+    "code_correctness": 0,
+    "code_quality": 1,
+    "complexity_analysis": 0
   }},
   "strengths": [
     "Honest about knowledge gap / attempted problem setup..."
@@ -484,6 +494,7 @@ async def evaluate_submission(
 
     system_content = REVIEW_SYSTEM_PROMPT.format(
         title=question.get("title", ""),
+        difficulty=question.get("difficulty", "Medium"),
         expected_time=question.get("expectedComplexity", {}).get("time", "O(N)"),
         expected_space=question.get("expectedComplexity", {}).get("space", "O(N)"),
         rubric=json.dumps(question.get("rubric", {})),
@@ -513,6 +524,15 @@ Evaluate rigorously according to the mandatory principles and return JSON:"""
             content = content.split("```")[1].split("```")[0].strip()
 
         parsed = json.loads(content)
+
+        # STRICT ENFORCEMENT: Unattempted code or "I don't know" answers MUST BE scored 0-5 in every case (Easy, Medium, Hard)
+        if is_blank_code or is_gave_up:
+            parsed["overall_score"] = min(int(parsed.get("overall_score", 2)), 5)
+            parsed["passed"] = False
+            if "scores" in parsed and isinstance(parsed["scores"], dict):
+                for k in parsed["scores"]:
+                    parsed["scores"][k] = min(int(parsed["scores"][k]), 5)
+
         return parsed
     except Exception as e:
         logger.error(f"Claude invocation failed for submission review: {e}")
@@ -528,7 +548,9 @@ def _generate_mock_review(
     """
     Generates a rigorous, objective evaluation report checking code efficiency,
     syntax correctness, and verbal alignment.
+    Strictly awards 0-5 for unattempted or 'I don't know' answers across Easy, Medium, and Hard problems.
     """
+    difficulty = question.get("difficulty", "Medium")
     expected_time = question.get("expectedComplexity", {}).get("time", "O(N)")
     expected_space = question.get("expectedComplexity", {}).get("space", "O(N)")
 
@@ -539,75 +561,113 @@ def _generate_mock_review(
     # -------------------------------------------------------------------------
     if is_blank_code and is_gave_up:
         return {
-            "overall_score": 18,
-            "passed": false if False else False,
-            "summary": "No solution was implemented. The candidate left the starter template untouched and verbally stated they did not know how to approach the problem.",
+            "overall_score": 2,
+            "passed": False,
+            "summary": f"Unattempted problem with no solution provided ({difficulty} difficulty). The candidate left the starter template untouched and verbally stated they did not know how to approach the problem.",
             "scores": {
-                "problem_solving": 15,
-                "verbal_communication": 20,
-                "code_correctness": 10,
-                "code_quality": 15,
-                "complexity_analysis": 10,
+                "problem_solving": 2,
+                "verbal_communication": 2,
+                "code_correctness": 0,
+                "code_quality": 1,
+                "complexity_analysis": 0,
             },
             "strengths": [
                 "Honest about knowledge gap instead of guessing randomly.",
                 "Opened the interview session and engaged with the problem statement.",
             ],
             "areas_for_improvement": [
-                "Did not implement any solution code; left the function body as a placeholder/pass.",
+                "Did not attempt any solution code; left the function body as placeholder boilerplate.",
                 "Did not attempt a brute-force approach. In technical interviews, always articulate a brute-force solution even if unsure of the optimal one.",
-                f"Review the required data structures for {question.get('title', 'this problem')} (expected runtime: {expected_time}).",
+                f"Review the required algorithms and data structures for {question.get('title', 'this problem')} (target: {expected_time}).",
             ],
             "time_complexity_evaluation": {
                 "expected": expected_time,
                 "candidate_stated": "None",
-                "actual_code": "Incomplete / No code",
+                "actual_code": "Unattempted / No code",
                 "verdict": "incorrect",
             },
             "space_complexity_evaluation": {
                 "expected": expected_space,
                 "candidate_stated": "None",
-                "actual_code": "Incomplete / No code",
+                "actual_code": "Unattempted / No code",
                 "verdict": "incorrect",
             },
             "verbal_code_alignment": "No implementation provided to evaluate alignment against spoken words.",
         }
 
     # -------------------------------------------------------------------------
-    # Scenario B: Blank Code (Starter boilerplate untouched), but spoke something
+    # Scenario B: Blank / Unattempted Code (Starter boilerplate untouched), spoke some reasoning
     # -------------------------------------------------------------------------
     if is_blank_code:
         return {
-            "overall_score": 32,
+            "overall_score": 3,
             "passed": False,
-            "summary": "The candidate spoke about the problem but failed to implement any code, leaving the starter template untouched.",
+            "summary": f"Unattempted code implementation ({difficulty} difficulty). The candidate spoke about the problem but did not implement any runnable code, leaving the starter template untouched.",
             "scores": {
-                "problem_solving": 40,
-                "verbal_communication": 45,
-                "code_correctness": 10,
-                "code_quality": 20,
-                "complexity_analysis": 25,
+                "problem_solving": 3,
+                "verbal_communication": 4,
+                "code_correctness": 0,
+                "code_quality": 1,
+                "complexity_analysis": 0,
             },
             "strengths": [
                 "Attempted verbal communication regarding the problem concept.",
             ],
             "areas_for_improvement": [
-                "Zero code implementation: The solution function body was left as 'pass' / empty.",
+                "Zero code implementation: The solution function body was left unwritten / unmodified boilerplate.",
                 "Must translate verbal thoughts into runnable code within the interview timeframe.",
             ],
             "time_complexity_evaluation": {
                 "expected": expected_time,
                 "candidate_stated": "Vague / None",
-                "actual_code": "No code implemented",
+                "actual_code": "Unattempted / No code",
                 "verdict": "incorrect",
             },
             "space_complexity_evaluation": {
                 "expected": expected_space,
                 "candidate_stated": "Vague / None",
-                "actual_code": "No code implemented",
+                "actual_code": "Unattempted / No code",
                 "verdict": "incorrect",
             },
             "verbal_code_alignment": "Spoke concepts aloud but did not write any corresponding code in the editor.",
+        }
+
+    # -------------------------------------------------------------------------
+    # Scenario C: Candidate said "I don't know" / gave up without an algorithmic solution
+    # -------------------------------------------------------------------------
+    if is_gave_up:
+        return {
+            "overall_score": 2,
+            "passed": False,
+            "summary": f"Question answered with uncertainty ('I don't know' / gave up, {difficulty} difficulty). The candidate did not formulate or explain a functional algorithmic approach.",
+            "scores": {
+                "problem_solving": 1,
+                "verbal_communication": 2,
+                "code_correctness": 1,
+                "code_quality": 1,
+                "complexity_analysis": 0,
+            },
+            "strengths": [
+                "Honest about knowledge gap rather than submitting random code.",
+                "Acknowledged the question difficulty.",
+            ],
+            "areas_for_improvement": [
+                "Formulate at least a brute-force approach even if unsure of the optimal solution.",
+                f"Study fundamental patterns for {question.get('title', 'this problem')} (expected: {expected_time}).",
+            ],
+            "time_complexity_evaluation": {
+                "expected": expected_time,
+                "candidate_stated": "None / Unknown",
+                "actual_code": efficiency["actual_time"],
+                "verdict": "incorrect",
+            },
+            "space_complexity_evaluation": {
+                "expected": expected_space,
+                "candidate_stated": "None / Unknown",
+                "actual_code": efficiency["actual_space"],
+                "verdict": "incorrect",
+            },
+            "verbal_code_alignment": "Candidate verbally gave up or stated they did not know how to solve the problem.",
         }
 
     # -------------------------------------------------------------------------

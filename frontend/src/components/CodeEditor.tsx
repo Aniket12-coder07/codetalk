@@ -4,16 +4,27 @@ import { Code2, RotateCcw, Send } from 'lucide-react';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { IconButton } from './ui/IconButton';
+import { SupportedLanguage } from '../types';
 
 interface CodeEditorProps {
   code: string;
   onChange: (val: string) => void;
-  language: 'python' | 'javascript';
-  onLanguageChange: (lang: 'python' | 'javascript') => void;
+  language: SupportedLanguage;
+  onLanguageChange: (lang: SupportedLanguage) => void;
   onResetCode: () => void;
   onSubmitCode: () => void;
   isSubmitting?: boolean;
+  isDarkMode?: boolean;
 }
+
+const LANGUAGES: { id: SupportedLanguage; label: string; badge: string }[] = [
+  { id: 'python', label: 'Python', badge: 'PY' },
+  { id: 'javascript', label: 'JavaScript', badge: 'JS' },
+  { id: 'typescript', label: 'TypeScript', badge: 'TS' },
+  { id: 'java', label: 'Java', badge: 'JAVA' },
+  { id: 'cpp', label: 'C++', badge: 'C++' },
+  { id: 'go', label: 'Go', badge: 'GO' },
+];
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
   code,
@@ -23,6 +34,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   onResetCode,
   onSubmitCode,
   isSubmitting = false,
+  isDarkMode = false,
 }) => {
   return (
     <Card
@@ -32,30 +44,26 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       className="flex flex-col h-full"
     >
       {/* Editor Header Bar */}
-      <div className="flex items-center justify-between pb-3 mb-3 border-b-3 border-black/10">
-        <div className="flex items-center gap-2">
-          {/* Language Selector Tabs */}
-          <div className="flex items-center border-2 border-black rounded-xl overflow-hidden shadow-neo-sm bg-white">
-            <button
-              onClick={() => onLanguageChange('python')}
-              className={`px-3 py-1 text-xs font-black transition-all ${
-                language === 'python'
-                  ? 'bg-neo-yellow text-black'
-                  : 'bg-white text-gray-700 hover:bg-cream-100'
-              }`}
-            >
-              Python
-            </button>
-            <button
-              onClick={() => onLanguageChange('javascript')}
-              className={`px-3 py-1 text-xs font-black border-l-2 border-black transition-all ${
-                language === 'javascript'
-                  ? 'bg-neo-yellow text-black'
-                  : 'bg-white text-gray-700 hover:bg-cream-100'
-              }`}
-            >
-              JavaScript
-            </button>
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 mb-3 border-b-3 border-black/10 dark:border-white/10">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* 6-Language Selector Tabs */}
+          <div className="flex items-center border-2 border-black dark:border-white/80 rounded-xl overflow-hidden shadow-neo-sm bg-white dark:bg-zinc-800">
+            {LANGUAGES.map((lang, idx) => (
+              <button
+                key={lang.id}
+                onClick={() => onLanguageChange(lang.id)}
+                className={`px-2.5 py-1 text-xs font-black transition-all cursor-pointer ${
+                  idx > 0 ? 'border-l-2 border-black dark:border-white/80' : ''
+                } ${
+                  language === lang.id
+                    ? 'bg-neo-yellow text-black'
+                    : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-cream-100 dark:hover:bg-zinc-700'
+                }`}
+              >
+                <span className="hidden sm:inline">{lang.label}</span>
+                <span className="sm:hidden">{lang.badge}</span>
+              </button>
+            ))}
           </div>
 
           <IconButton
@@ -85,12 +93,12 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       </div>
 
       {/* Embedded Monaco Editor Container */}
-      <div className="flex-1 min-h-[360px] border-3 border-black rounded-[16px] overflow-hidden shadow-neo-sm bg-[#1e1e1e]">
+      <div className="flex-1 min-h-[360px] border-3 border-black dark:border-white/80 rounded-[16px] overflow-hidden shadow-neo-sm dark:shadow-[3px_3px_0px_0px_#000000] bg-[#1e1e1e]">
         <Editor
           height="100%"
-          language={language}
+          language={language === 'cpp' ? 'cpp' : language}
           value={code}
-          theme="vs-dark"
+          theme={isDarkMode ? 'vs-dark' : 'vs-dark'}
           onChange={(val) => onChange(val || '')}
           options={{
             minimap: { enabled: false },

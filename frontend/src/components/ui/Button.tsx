@@ -14,16 +14,16 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center justify-center font-bold tracking-wide border-4 border-black text-black select-none neo-pressable focus:outline-none';
+    'inline-flex items-center justify-center font-bold tracking-wide border-4 border-black dark:border-white text-black select-none neo-pressable focus:outline-none';
 
   const variantStyles = {
-    primary: 'bg-neo-yellow text-black hover:bg-yellow-400 shadow-neo',
-    secondary: 'bg-cream-50 text-black hover:bg-white shadow-neo',
-    success: 'bg-neo-green text-black hover:bg-green-500 shadow-neo',
-    warning: 'bg-neo-orange text-black hover:bg-orange-500 shadow-neo',
-    danger: 'bg-neo-red text-white hover:bg-red-500 shadow-neo',
-    ghost: 'bg-transparent text-black border-3 hover:bg-black/5 shadow-neo-sm',
-    icon: 'bg-cream-50 text-black hover:bg-white shadow-neo p-2.5 aspect-square',
+    primary: 'bg-neo-yellow text-black hover:bg-yellow-400 shadow-neo dark:shadow-[4px_4px_0px_0px_#000000]',
+    secondary: 'bg-cream-50 dark:bg-zinc-800 text-black dark:text-white hover:bg-white dark:hover:bg-zinc-700 shadow-neo dark:shadow-[4px_4px_0px_0px_#000000]',
+    success: 'bg-neo-green text-black hover:bg-green-500 shadow-neo dark:shadow-[4px_4px_0px_0px_#000000]',
+    warning: 'bg-neo-orange text-black hover:bg-orange-500 shadow-neo dark:shadow-[4px_4px_0px_0px_#000000]',
+    danger: 'bg-neo-red text-white hover:bg-red-500 shadow-neo dark:shadow-[4px_4px_0px_0px_#000000]',
+    ghost: 'bg-transparent text-black dark:text-white border-3 hover:bg-black/5 dark:hover:bg-white/10 shadow-neo-sm',
+    icon: 'bg-cream-50 dark:bg-zinc-800 text-black dark:text-white hover:bg-white dark:hover:bg-zinc-700 shadow-neo p-2.5 aspect-square',
   };
 
   const sizeStyles = {

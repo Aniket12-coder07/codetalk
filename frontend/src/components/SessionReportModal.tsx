@@ -27,20 +27,20 @@ export const SessionReportModal: React.FC<SessionReportModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200">
       <div
-        className={`relative w-full max-w-3xl bg-cream-50 border-4 ${borderColor} rounded-[24px] shadow-neo-xl p-6 sm:p-8 max-h-[90vh] overflow-y-auto`}
+        className={`relative w-full max-w-3xl bg-cream-50 dark:bg-[#121215] border-4 ${borderColor} dark:border-white/90 rounded-[24px] shadow-neo-xl dark:shadow-[8px_8px_0px_0px_#000000] p-6 sm:p-8 max-h-[90vh] overflow-y-auto`}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 w-10 h-10 bg-white border-3 border-black rounded-[14px] shadow-neo-sm flex items-center justify-center hover:bg-cream-100 neo-pressable cursor-pointer"
+          className="absolute top-5 right-5 w-10 h-10 bg-white dark:bg-zinc-800 border-3 border-black dark:border-white/80 rounded-[14px] shadow-neo-sm flex items-center justify-center hover:bg-cream-100 dark:hover:bg-zinc-700 neo-pressable cursor-pointer"
         >
-          <X className="w-5 h-5 text-black" strokeWidth={3} />
+          <X className="w-5 h-5 text-black dark:text-white" strokeWidth={3} />
         </button>
 
         {/* Top Header */}
-        <div className="flex flex-wrap items-center gap-4 mb-6 pb-4 border-b-4 border-black/10">
+        <div className="flex flex-wrap items-center gap-4 mb-6 pb-4 border-b-4 border-black/10 dark:border-white/10">
           <div
-            className={`w-20 h-20 rounded-[20px] border-4 border-black flex flex-col items-center justify-center shadow-neo ${
+            className={`w-20 h-20 rounded-[20px] border-4 border-black dark:border-white/80 flex flex-col items-center justify-center shadow-neo ${
               isPositive ? 'bg-neo-green text-black' : 'bg-neo-orange text-black'
             }`}
           >
@@ -54,32 +54,32 @@ export const SessionReportModal: React.FC<SessionReportModalProps> = ({
 
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-black text-black font-sans">
+              <h2 className="text-2xl font-black text-black dark:text-white font-sans">
                 Interview Performance Report
               </h2>
               <Badge color={isPositive ? 'green' : 'orange'} className="uppercase">
                 {isPositive ? 'Strong Hire' : 'Needs Practice'}
               </Badge>
             </div>
-            <p className="text-sm font-bold text-gray-700 mt-1">
+            <p className="text-sm font-bold text-gray-700 dark:text-zinc-300 mt-1">
               Problem: {question.title} ({question.difficulty})
             </p>
           </div>
         </div>
 
         {/* Executive Summary */}
-        <div className="bg-white border-3 border-black rounded-[18px] p-4 shadow-neo mb-6">
-          <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 mb-1">
+        <div className="bg-white dark:bg-zinc-800/90 border-3 border-black dark:border-white/80 rounded-[18px] p-4 shadow-neo mb-6">
+          <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 dark:text-zinc-400 mb-1">
             Executive Assessment:
           </h3>
-          <p className="text-sm font-bold text-black leading-relaxed">
+          <p className="text-sm font-bold text-black dark:text-zinc-100 leading-relaxed">
             {report.summary}
           </p>
         </div>
 
         {/* Rubric Score Breakdown Bars */}
-        <div className="bg-cream-100 border-3 border-black rounded-[18px] p-5 shadow-neo mb-6">
-          <h3 className="text-sm font-black uppercase tracking-wider text-black mb-3">
+        <div className="bg-cream-100 dark:bg-zinc-900 border-3 border-black dark:border-white/80 rounded-[18px] p-5 shadow-neo mb-6">
+          <h3 className="text-sm font-black uppercase tracking-wider text-black dark:text-white mb-3">
             Core Competency Breakdown
           </h3>
           <div className="space-y-3 font-sans">
@@ -90,11 +90,11 @@ export const SessionReportModal: React.FC<SessionReportModalProps> = ({
                 .join(' ');
               return (
                 <div key={category} className="space-y-1">
-                  <div className="flex justify-between text-xs font-black text-black">
+                  <div className="flex justify-between text-xs font-black text-black dark:text-zinc-100">
                     <span>{label}</span>
                     <span className="tabular-nums font-mono">{score}/100</span>
                   </div>
-                  <div className="w-full h-3 bg-white border-2 border-black rounded-full overflow-hidden">
+                  <div className="w-full h-3 bg-white dark:bg-zinc-800 border-2 border-black dark:border-white/80 rounded-full overflow-hidden">
                     <div
                       style={{ width: `${score}%` }}
                       className={`h-full border-r-2 border-black transition-all duration-500 ${
@@ -115,12 +115,12 @@ export const SessionReportModal: React.FC<SessionReportModalProps> = ({
         {/* Strengths & Improvement Areas Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {/* Strengths */}
-          <div className="bg-white border-3 border-black rounded-[18px] p-4 shadow-neo">
-            <h4 className="text-xs font-black uppercase tracking-wider text-black mb-2 flex items-center gap-1.5">
+          <div className="bg-white dark:bg-zinc-800/90 border-3 border-black dark:border-white/80 rounded-[18px] p-4 shadow-neo">
+            <h4 className="text-xs font-black uppercase tracking-wider text-black dark:text-white mb-2 flex items-center gap-1.5">
               <ThumbsUp className="w-4 h-4 text-neo-green" strokeWidth={3} />
               Demonstrated Strengths
             </h4>
-            <ul className="space-y-2 text-xs font-bold text-gray-800">
+            <ul className="space-y-2 text-xs font-bold text-gray-800 dark:text-zinc-200">
               {report.strengths.map((str, idx) => (
                 <li key={idx} className="flex items-start gap-1.5">
                   <span className="text-neo-green font-black">✔</span>
@@ -131,12 +131,12 @@ export const SessionReportModal: React.FC<SessionReportModalProps> = ({
           </div>
 
           {/* Areas for Improvement */}
-          <div className="bg-white border-3 border-black rounded-[18px] p-4 shadow-neo">
-            <h4 className="text-xs font-black uppercase tracking-wider text-black mb-2 flex items-center gap-1.5">
+          <div className="bg-white dark:bg-zinc-800/90 border-3 border-black dark:border-white/80 rounded-[18px] p-4 shadow-neo">
+            <h4 className="text-xs font-black uppercase tracking-wider text-black dark:text-white mb-2 flex items-center gap-1.5">
               <Target className="w-4 h-4 text-neo-orange" strokeWidth={3} />
               Growth Opportunities
             </h4>
-            <ul className="space-y-2 text-xs font-bold text-gray-800">
+            <ul className="space-y-2 text-xs font-bold text-gray-800 dark:text-zinc-200">
               {report.areas_for_improvement.map((area, idx) => (
                 <li key={idx} className="flex items-start gap-1.5">
                   <span className="text-neo-orange font-black">➤</span>
@@ -148,13 +148,13 @@ export const SessionReportModal: React.FC<SessionReportModalProps> = ({
         </div>
 
         {/* Complexity Evaluation Table */}
-        <div className="bg-white border-3 border-black rounded-[18px] p-4 shadow-neo mb-6 overflow-x-auto">
-          <h4 className="text-xs font-black uppercase tracking-wider text-black mb-2">
+        <div className="bg-white dark:bg-zinc-800/90 border-3 border-black dark:border-white/80 rounded-[18px] p-4 shadow-neo mb-6 overflow-x-auto">
+          <h4 className="text-xs font-black uppercase tracking-wider text-black dark:text-white mb-2">
             Time & Space Complexity Audit
           </h4>
           <table className="w-full text-xs font-mono">
             <thead>
-              <tr className="border-b-2 border-black text-left font-black">
+              <tr className="border-b-2 border-black dark:border-white/20 text-left font-black text-black dark:text-white">
                 <th className="pb-2">Metric</th>
                 <th className="pb-2">Target</th>
                 <th className="pb-2">Spoken Aloud</th>
@@ -162,12 +162,12 @@ export const SessionReportModal: React.FC<SessionReportModalProps> = ({
                 <th className="pb-2">Verdict</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-black/10 font-bold">
+            <tbody className="divide-y divide-black/10 dark:divide-white/10 font-bold">
               <tr>
-                <td className="py-2 text-black">Time</td>
-                <td className="py-2 text-gray-600">{report.time_complexity_evaluation.expected}</td>
-                <td className="py-2 text-black">{report.time_complexity_evaluation.candidate_stated}</td>
-                <td className="py-2 text-black">{report.time_complexity_evaluation.actual_code}</td>
+                <td className="py-2 text-black dark:text-zinc-100">Time</td>
+                <td className="py-2 text-gray-600 dark:text-zinc-400">{report.time_complexity_evaluation.expected}</td>
+                <td className="py-2 text-black dark:text-zinc-100">{report.time_complexity_evaluation.candidate_stated}</td>
+                <td className="py-2 text-black dark:text-zinc-100">{report.time_complexity_evaluation.actual_code}</td>
                 <td className="py-2">
                   <Badge color={report.time_complexity_evaluation.verdict === 'optimal' ? 'green' : 'orange'}>
                     {report.time_complexity_evaluation.verdict}
@@ -175,10 +175,10 @@ export const SessionReportModal: React.FC<SessionReportModalProps> = ({
                 </td>
               </tr>
               <tr>
-                <td className="py-2 text-black">Space</td>
-                <td className="py-2 text-gray-600">{report.space_complexity_evaluation.expected}</td>
-                <td className="py-2 text-black">{report.space_complexity_evaluation.candidate_stated}</td>
-                <td className="py-2 text-black">{report.space_complexity_evaluation.actual_code}</td>
+                <td className="py-2 text-black dark:text-zinc-100">Space</td>
+                <td className="py-2 text-gray-600 dark:text-zinc-400">{report.space_complexity_evaluation.expected}</td>
+                <td className="py-2 text-black dark:text-zinc-100">{report.space_complexity_evaluation.candidate_stated}</td>
+                <td className="py-2 text-black dark:text-zinc-100">{report.space_complexity_evaluation.actual_code}</td>
                 <td className="py-2">
                   <Badge color={report.space_complexity_evaluation.verdict === 'optimal' ? 'green' : 'orange'}>
                     {report.space_complexity_evaluation.verdict}
@@ -187,7 +187,7 @@ export const SessionReportModal: React.FC<SessionReportModalProps> = ({
               </tr>
             </tbody>
           </table>
-          <p className="mt-2 text-xs font-sans font-bold text-gray-600">
+          <p className="mt-2 text-xs font-sans font-bold text-gray-600 dark:text-zinc-400">
             <strong>Verbal-Code Alignment:</strong> {report.verbal_code_alignment}
           </p>
         </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import questionsData from './data/questions.json';
-import { Question, InterviewerTurn, ReviewReport } from './types';
+import { Question, InterviewerTurn, ReviewReport, SupportedLanguage } from './types';
 import { Navbar } from './components/Navbar';
 import { QuestionCard } from './components/QuestionCard';
 import { MicButton } from './components/MicButton';
@@ -8,21 +8,41 @@ import { LiveTranscript } from './components/LiveTranscript';
 import { CodeEditor } from './components/CodeEditor';
 import { InterviewerPanel } from './components/InterviewerPanel';
 import { SessionReportModal } from './components/SessionReportModal';
+import { DiagnosticsModal } from './components/DiagnosticsModal';
 
-// Backend configuration
-const BACKEND_HTTP = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-const BACKEND_WS = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/transcribe';
+// Helper to extract starter code for any supported language
+const getStarterCode = (q: Question, lang: SupportedLanguage): string => {
+  if (q.starterCode && (q.starterCode as any)[lang]) {
+    return (q.starterCode as any)[lang];
+  }
+  return q.starterCode?.python || '// Speak your approach out loud before writing code\n';
+};
+
+// Dynamic host resolution to avoid IPv6 localhost refusal on Windows
+const getBackendUrl = () => {
+  if (import.meta.env.VITE_BACKEND_URL) return import.meta.env.VITE_BACKEND_URL;
+  const host = typeof window !== 'undefined' && window.location.hostname ? window.location.hostname : '127.0.0.1';
+  return `http://${host}:8000`;
+};
+
+const getWsUrl = () => {
+  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
+  const host = typeof window !== 'undefined' && window.location.hostname ? window.location.hostname : '127.0.0.1';
+  const proto = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${proto}//${host}:8000/ws/transcribe`;
+};
 
 export function App() {
   const questions: Question[] = questionsData as Question[];
   const [currentQuestion, setCurrentQuestion] = useState<Question>(questions[0]);
-  const [language, setLanguage] = useState<'python' | 'javascript'>('python');
-  const [code, setCode] = useState<string>(questions[0].starterCode.python);
+  const [language, setLanguage] = useState<SupportedLanguage>('python');
+  const [code, setCode] = useState<string>(getStarterCode(questions[0], 'python'));
 
   // Audio & STT Streaming State
   const [isRecording, setIsRecording] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
+  const [backendStatus, setBackendStatus] = useState<'online' | 'streaming' | 'offline' | 'checking'>('checking');
   const [finalTranscripts, setFinalTranscripts] = useState<string[]>([]);
   const [partialTranscript, setPartialTranscript] = useState<string>('');
 
@@ -32,6 +52,30 @@ export function App() {
   const [isSubmittingCode, setIsSubmittingCode] = useState(false);
   const [report, setReport] = useState<ReviewReport | null>(null);
   const [isReportOpen, setIsReportOpen] = useState(false);
+  const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
+
+  // Theme Mode (Dark / Light)
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('codetalk_theme');
+      if (saved) return saved === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  // Apply dark class to document root
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('codetalk_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('codetalk_theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => setIsDarkMode((prev) => !prev);
 
   // Session Timer
   const [secondsElapsed, setSecondsElapsed] = useState(0);
@@ -41,6 +85,26 @@ export function App() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
+
+  // Backend Health Poller
+  const checkBackendHealth = async () => {
+    try {
+      const res = await fetch(`${getBackendUrl()}/api/health`, { method: 'GET' });
+      if (res.ok) {
+        setBackendStatus(isRecording ? 'streaming' : 'online');
+      } else {
+        setBackendStatus('offline');
+      }
+    } catch {
+      setBackendStatus('offline');
+    }
+  };
+
+  useEffect(() => {
+    checkBackendHealth();
+    const interval = setInterval(checkBackendHealth, 10000);
+    return () => clearInterval(interval);
+  }, [isRecording]);
 
   // Session timer increment
   useEffect(() => {
@@ -53,7 +117,7 @@ export function App() {
   // Handle Question Change
   const handleSelectQuestion = (q: Question) => {
     setCurrentQuestion(q);
-    setCode(language === 'python' ? q.starterCode.python : q.starterCode.javascript);
+    setCode(getStarterCode(q, language));
     setFinalTranscripts([]);
     setPartialTranscript('');
     setCurrentTurn(null);
@@ -61,14 +125,14 @@ export function App() {
   };
 
   // Handle Language Change
-  const handleLanguageChange = (lang: 'python' | 'javascript') => {
+  const handleLanguageChange = (lang: SupportedLanguage) => {
     setLanguage(lang);
-    setCode(lang === 'python' ? currentQuestion.starterCode.python : currentQuestion.starterCode.javascript);
+    setCode(getStarterCode(currentQuestion, lang));
   };
 
   // Reset Code
   const handleResetCode = () => {
-    setCode(language === 'python' ? currentQuestion.starterCode.python : currentQuestion.starterCode.javascript);
+    setCode(getStarterCode(currentQuestion, language));
   };
 
   // =========================================================================
@@ -77,17 +141,9 @@ export function App() {
 
   const startStreaming = async () => {
     try {
-      // 1. Establish WebSocket connection to backend
-      const ws = new WebSocket(BACKEND_WS);
-      ws.binaryType = 'arraybuffer';
-      wsRef.current = ws;
-
-      ws.onopen = async () => {
-        setIsConnected(true);
-        console.log('Connected to CodeTalk WebSocket Audio Bridge.');
-
-        // 2. Request microphone stream
-        const stream = await navigator.mediaDevices.getUserMedia({
+      let stream: MediaStream | null = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
           audio: {
             sampleRate: 16000,
             channelCount: 1,
@@ -96,45 +152,64 @@ export function App() {
           },
         });
         mediaStreamRef.current = stream;
+      } catch (micErr) {
+        console.warn('Microphone permission blocked or unavailable. Falling back to simulated voice mode.', micErr);
+        setIsRecording(true);
+        setIsConnected(true);
+        setBackendStatus('streaming');
+        simulateMockVoice();
+        return;
+      }
 
-        // 3. Set up Web Audio Context for 16kHz PCM streaming
+      // Establish WebSocket connection to backend
+      const ws = new WebSocket(getWsUrl());
+      ws.binaryType = 'arraybuffer';
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        setIsConnected(true);
+        setIsRecording(true);
+        setBackendStatus('streaming');
+        console.log('Connected to CodeTalk WebSocket Audio Bridge.');
+
+        // Set up Web Audio Context for 16kHz PCM streaming
         const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)({
           sampleRate: 16000,
         });
         audioContextRef.current = audioCtx;
 
-        const source = audioCtx.createMediaStreamSource(stream);
-        // Using ScriptProcessor for real-time PCM chunk extraction
-        const processor = audioCtx.createScriptProcessor(4096, 1, 1);
-        processorRef.current = processor;
+        if (stream) {
+          const source = audioCtx.createMediaStreamSource(stream);
+          const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+          processorRef.current = processor;
 
-        processor.onaudioprocess = (e) => {
-          if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+          processor.onaudioprocess = (e) => {
+            if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
-          const inputData = e.inputBuffer.getChannelData(0);
+            const inputData = e.inputBuffer.getChannelData(0);
 
-          // Calculate visualizer audio volume level
-          let sum = 0;
-          for (let i = 0; i < inputData.length; i++) {
-            sum += inputData[i] * inputData[i];
-          }
-          const rms = Math.sqrt(sum / inputData.length);
-          setAudioLevel(Math.min(100, Math.round(rms * 400)));
+            // Calculate visualizer audio volume level
+            let sum = 0;
+            for (let i = 0; i < inputData.length; i++) {
+              sum += inputData[i] * inputData[i];
+            }
+            const rms = Math.sqrt(sum / inputData.length);
+            setAudioLevel(Math.min(100, Math.round(rms * 400)));
 
-          // Convert Float32Array to 16-bit Signed Integer PCM (little-endian)
-          const pcmData = new Int16Array(inputData.length);
-          for (let i = 0; i < inputData.length; i++) {
-            const s = Math.max(-1, Math.min(1, inputData[i]));
-            pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
-          }
+            // Convert Float32Array to 16-bit Signed Integer PCM (little-endian)
+            const pcmData = new Int16Array(inputData.length);
+            for (let i = 0; i < inputData.length; i++) {
+              const s = Math.max(-1, Math.min(1, inputData[i]));
+              pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+            }
 
-          // Stream raw PCM chunk over WebSocket
-          wsRef.current.send(pcmData.buffer);
-        };
+            // Stream raw PCM chunk over WebSocket
+            wsRef.current.send(pcmData.buffer);
+          };
 
-        source.connect(processor);
-        processor.connect(audioCtx.destination);
-        setIsRecording(true);
+          source.connect(processor);
+          processor.connect(audioCtx.destination);
+        }
       };
 
       ws.onmessage = (event) => {
@@ -156,17 +231,19 @@ export function App() {
       ws.onclose = () => {
         setIsConnected(false);
         setIsRecording(false);
+        setBackendStatus('online');
         setAudioLevel(0);
       };
 
       ws.onerror = (err) => {
         console.error('WebSocket encountered an error:', err);
+        setBackendStatus('offline');
       };
     } catch (error) {
       console.warn('Microphone permission denied or device unavailable. Running in simulated voice mode.', error);
-      // Fallback: start mock recording simulation
       setIsRecording(true);
       setIsConnected(true);
+      setBackendStatus('streaming');
       simulateMockVoice();
     }
   };
@@ -174,10 +251,10 @@ export function App() {
   const simulateMockVoice = () => {
     const mockSteps = [
       { delay: 1000, type: 'partial', text: "For this problem, I'm thinking about..." },
-      { delay: 2500, type: 'partial', text: "For this problem, I'm thinking about using a hash map to store complements." },
-      { delay: 4000, type: 'final', text: "For this problem, I'm thinking about using a hash map to store each complement as we iterate." },
-      { delay: 5500, type: 'partial', text: "If target minus current number is in the map," },
-      { delay: 7000, type: 'final', text: "If target minus current number is in the map, we return both indices. This yields O(N) time and O(N) space." },
+      { delay: 2500, type: 'partial', text: `For ${currentQuestion.title}, I'm thinking about comparing brute force with an optimal approach.` },
+      { delay: 4000, type: 'final', text: `For ${currentQuestion.title}, I'm considering using an optimal approach to achieve ${currentQuestion.expectedComplexity.time} time complexity.` },
+      { delay: 5500, type: 'partial', text: "Handling the edge cases and boundary conditions first," },
+      { delay: 7000, type: 'final', text: `Handling edge cases and constraints, this design uses ${currentQuestion.expectedComplexity.space} auxiliary space.` },
     ];
 
     mockSteps.forEach(({ delay, type, text }) => {
@@ -216,6 +293,7 @@ export function App() {
       wsRef.current = null;
     }
     setIsConnected(false);
+    setBackendStatus('online');
   };
 
   const handleToggleRecording = () => {
@@ -244,7 +322,7 @@ export function App() {
 
     setIsLoadingFollowup(true);
     try {
-      const res = await fetch(`${BACKEND_HTTP}/api/interview/followup`, {
+      const res = await fetch(`${getBackendUrl()}/api/interview/followup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -275,7 +353,7 @@ export function App() {
   const handleSubmitCode = async () => {
     setIsSubmittingCode(true);
     try {
-      const res = await fetch(`${BACKEND_HTTP}/api/interview/review`, {
+      const res = await fetch(`${getBackendUrl()}/api/interview/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -298,15 +376,15 @@ export function App() {
 
       if (isBlank || gaveUp) {
         setReport({
-          overall_score: 18,
+          overall_score: 2,
           passed: false,
-          summary: 'No functional implementation was provided. The candidate left the starter template untouched and expressed uncertainty without developing an algorithm.',
+          summary: `Unattempted solution or "I don't know" answer (${currentQuestion.difficulty} difficulty). The candidate left the starter boilerplate untouched or expressed uncertainty without implementing an algorithm.`,
           scores: {
-            problem_solving: 15,
-            verbal_communication: 20,
-            code_correctness: 10,
-            code_quality: 15,
-            complexity_analysis: 10,
+            problem_solving: 2,
+            verbal_communication: 2,
+            code_correctness: 0,
+            code_quality: 1,
+            complexity_analysis: 0,
           },
           strengths: [
             'Opened the interview and engaged with the problem prompt.',
@@ -319,13 +397,13 @@ export function App() {
           time_complexity_evaluation: {
             expected: currentQuestion.expectedComplexity.time,
             candidate_stated: 'None',
-            actual_code: 'Incomplete / No code',
+            actual_code: 'Unattempted / No code',
             verdict: 'incorrect',
           },
           space_complexity_evaluation: {
             expected: currentQuestion.expectedComplexity.space,
             candidate_stated: 'None',
-            actual_code: 'Incomplete / No code',
+            actual_code: 'Unattempted / No code',
             verdict: 'incorrect',
           },
           verbal_code_alignment: 'No implementation provided to evaluate alignment against spoken words.',
@@ -373,22 +451,26 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen relative p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto">
+    <div className="min-h-screen relative p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto transition-colors duration-200">
       {/* Neo-brutalist Large Background Bleed Circles */}
       <div className="neo-bg-decorations">
         <div className="neo-bg-circle-warm" />
         <div className="neo-bg-circle-cool" />
       </div>
 
-      {/* Main Navbar */}
+      {/* Main Navbar with Dark Mode Toggle & Standby/Health Monitor */}
       <Navbar
         questions={questions}
         currentQuestion={currentQuestion}
         onSelectQuestion={handleSelectQuestion}
         secondsElapsed={secondsElapsed}
         isConnected={isConnected}
+        backendStatus={backendStatus}
+        onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
         onOpenReport={() => setIsReportOpen(true)}
         canReview={Boolean(report || accumulatedTranscript || code.length > 20)}
+        isDarkMode={isDarkMode}
+        onToggleTheme={toggleTheme}
       />
 
       {/* 2-Column Responsive Layout */}
@@ -436,6 +518,7 @@ export function App() {
               onResetCode={handleResetCode}
               onSubmitCode={handleSubmitCode}
               isSubmitting={isSubmittingCode}
+              isDarkMode={isDarkMode}
             />
           </div>
 
@@ -451,6 +534,24 @@ export function App() {
         </div>
       </div>
 
+      {/* System Diagnostics & Voice Pipeline Modal */}
+      <DiagnosticsModal
+        isOpen={isDiagnosticsOpen}
+        onClose={() => setIsDiagnosticsOpen(false)}
+        backendUrl={getBackendUrl()}
+        wsUrl={getWsUrl()}
+        backendStatus={backendStatus}
+        onPingBackend={checkBackendHealth}
+        onSimulateVoice={() => {
+          setIsRecording(true);
+          setIsConnected(true);
+          simulateMockVoice();
+        }}
+        onToggleRecording={handleToggleRecording}
+        isRecording={isRecording}
+        audioLevel={audioLevel}
+      />
+
       {/* End-of-Session Performance Scorecard Modal */}
       <SessionReportModal
         report={report}
@@ -459,7 +560,6 @@ export function App() {
         onClose={() => setIsReportOpen(false)}
         onRestart={() => {
           setIsReportOpen(false);
-          // Pick next question
           const currentIdx = questions.findIndex((q) => q.id === currentQuestion.id);
           const nextIdx = (currentIdx + 1) % questions.length;
           handleSelectQuestion(questions[nextIdx]);

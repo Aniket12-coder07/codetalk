@@ -1,5 +1,7 @@
 export type Difficulty = 'Easy' | 'Medium' | 'Hard';
 
+export type SupportedLanguage = 'python' | 'javascript' | 'typescript' | 'java' | 'cpp' | 'go';
+
 export interface QuestionExample {
   input: string;
   output: string;
@@ -18,6 +20,10 @@ export interface Question {
   starterCode: {
     python: string;
     javascript: string;
+    typescript?: string;
+    java?: string;
+    cpp?: string;
+    go?: string;
   };
   expectedComplexity: {
     time: string;
@@ -25,6 +31,7 @@ export interface Question {
   };
   followUpQuestions: string[];
   rubric: Record<string, string>;
+  companyTags?: string[];
 }
 
 export interface TranscriptEntry {

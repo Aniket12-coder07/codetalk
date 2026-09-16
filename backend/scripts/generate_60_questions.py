@@ -1,0 +1,1141 @@
+"""
+Generate 60 Top-Tier Industry DSA Questions (20 Easy, 20 Medium, 20 Hard)
+with full starter code in Python, JavaScript, TypeScript, Java, C++, and Go.
+"""
+import json
+import os
+
+def create_starter_code(func_name, py_args, py_ret, js_args, ts_args, ts_ret, java_method, cpp_method, go_func):
+    return {
+        "python": f"def {func_name}({py_args}) -> {py_ret}:\n    # Speak your approach out loud before writing code\n    pass\n",
+        "javascript": f"function {func_name}({js_args}) {{\n    // Speak your approach out loud before writing code\n    \n}}\n",
+        "typescript": f"function {func_name}({ts_args}): {ts_ret} {{\n    // Speak your approach out loud before writing code\n    \n}}\n",
+        "java": f"class Solution {{\n    public {java_method} {{\n        // Speak your approach out loud before writing code\n        \n    }}\n}}\n",
+        "cpp": f"class Solution {{\npublic:\n    {cpp_method} {{\n        // Speak your approach out loud before writing code\n        \n    }}\n}};\n",
+        "go": f"func {go_func} {{\n    // Speak your approach out loud before writing code\n    \n}}\n"
+    }
+
+easy_questions = [
+    {
+        "id": "two-sum",
+        "title": "Two Sum",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Arrays & Hashing",
+        "companyTags": ["Google", "Meta", "Amazon", "Microsoft"],
+        "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order.",
+        "examples": [
+            {"input": "nums = [2,7,11,15], target = 9", "output": "[0,1]", "explanation": "Because nums[0] + nums[1] == 9, we return [0, 1]."},
+            {"input": "nums = [3,2,4], target = 6", "output": "[1,2]", "explanation": "Because nums[1] + nums[2] == 6, we return [1, 2]."}
+        ],
+        "constraints": ["2 <= nums.length <= 10^4", "-10^9 <= nums[i] <= 10^9", "-10^9 <= target <= 10^9", "Only one valid answer exists."],
+        "starterCode": create_starter_code("twoSum", "nums: list[int], target: int", "list[int]", "nums, target", "nums: number[], target: number", "number[]", "int[] twoSum(int[] nums, int target)", "vector<int> twoSum(vector<int>& nums, int target)", "twoSum(nums []int, target int) []int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(N)"},
+        "followUpQuestions": ["What is the brute-force complexity vs hash table?", "Can we solve in O(1) extra space if sorted?"],
+        "rubric": {"clarification": "Checked if sorted or negative numbers allowed?", "complexity_awareness": "Identified O(N) time and O(N) space.", "edge_cases": "Duplicates, negatives.", "verbal_clarity": "Explained complement lookup."}
+    },
+    {
+        "id": "valid-parentheses",
+        "title": "Valid Parentheses",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Stack",
+        "companyTags": ["Amazon", "Meta", "Bloomberg", "Microsoft"],
+        "description": "Given a string `s` containing just the characters `'('`, `')'`, `'{'`, `'}'`, `'['` and `']'`, determine if the input string is valid.\n\nAn input string is valid if open brackets are closed by the same type of brackets in the correct order.",
+        "examples": [
+            {"input": "s = \"()[]{}\"", "output": "true", "explanation": "All brackets close properly."},
+            {"input": "s = \"(]\"", "output": "false", "explanation": "Mismatched closing bracket."}
+        ],
+        "constraints": ["1 <= s.length <= 10^4", "s consists of parentheses only '()[]{}'."],
+        "starterCode": create_starter_code("isValid", "s: str", "bool", "s", "s: string", "boolean", "boolean isValid(String s)", "bool isValid(string s)", "isValid(s string) bool"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(N)"},
+        "followUpQuestions": ["What if other characters like operators appear?", "How do you optimize memory for odd-length strings?"],
+        "rubric": {"clarification": "Checked empty string and odd length?", "complexity_awareness": "O(N) time and O(N) space stack.", "edge_cases": "Unopened close brackets, left-over open brackets.", "verbal_clarity": "Explained LIFO stack matching."}
+    },
+    {
+        "id": "reverse-linked-list",
+        "title": "Reverse Linked List",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Linked List",
+        "companyTags": ["Microsoft", "Apple", "Amazon", "Google"],
+        "description": "Given the `head` of a singly linked list, reverse the list, and return the reversed list.",
+        "examples": [
+            {"input": "head = [1,2,3,4,5]", "output": "[5,4,3,2,1]", "explanation": "Reversed order."},
+            {"input": "head = [1,2]", "output": "[2,1]", "explanation": "Two-element reversal."}
+        ],
+        "constraints": ["Number of nodes is in range [0, 5000].", "-5000 <= Node.val <= 5000"],
+        "starterCode": create_starter_code("reverseList", "head", "ListNode", "head", "head: ListNode | null", "ListNode | null", "ListNode reverseList(ListNode head)", "ListNode* reverseList(ListNode* head)", "reverseList(head *ListNode) *ListNode"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1) iterative"},
+        "followUpQuestions": ["Can you do this both iteratively and recursively?", "What is the recursion call stack overhead?"],
+        "rubric": {"clarification": "Checked empty or single-node list?", "complexity_awareness": "O(1) auxiliary space.", "edge_cases": "Empty list, single node.", "verbal_clarity": "Explained prev, curr, next pointer tracking."}
+    },
+    {
+        "id": "merge-two-sorted-lists",
+        "title": "Merge Two Sorted Lists",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Linked List",
+        "companyTags": ["Amazon", "Apple", "Microsoft"],
+        "description": "You are given the heads of two sorted linked lists `list1` and `list2`. Merge the two lists into one sorted list by splicing together the nodes of the first two lists. Return the head of the merged linked list.",
+        "examples": [
+            {"input": "list1 = [1,2,4], list2 = [1,3,4]", "output": "[1,1,2,3,4,4]", "explanation": "Merged in non-decreasing order."},
+            {"input": "list1 = [], list2 = [0]", "output": "[0]", "explanation": "One empty list."}
+        ],
+        "constraints": ["Number of nodes in both lists is in range [0, 50].", "-100 <= Node.val <= 100", "Both lists are sorted in non-decreasing order."],
+        "starterCode": create_starter_code("mergeTwoLists", "list1, list2", "ListNode", "list1, list2", "list1: ListNode | null, list2: ListNode | null", "ListNode | null", "ListNode mergeTwoLists(ListNode list1, ListNode list2)", "ListNode* mergeTwoLists(ListNode* list1, ListNode* list2)", "mergeTwoLists(list1 *ListNode, list2 *ListNode) *ListNode"),
+        "expectedComplexity": {"time": "O(N + M)", "space": "O(1)"},
+        "followUpQuestions": ["How does dummy head node simplify edge conditions?", "Can this be done recursively?"],
+        "rubric": {"clarification": "Handled empty lists?", "complexity_awareness": "Linear time with constant space.", "edge_cases": "Unequal lengths, duplicates.", "verbal_clarity": "Explained dummy head and pointer splicing."}
+    },
+    {
+        "id": "best-time-to-buy-and-sell-stock",
+        "title": "Best Time to Buy and Sell Stock",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Arrays & DP",
+        "companyTags": ["Amazon", "Meta", "Google", "Bloomberg"],
+        "description": "You are given an array `prices` where `prices[i]` is the price of a given stock on the `i-th` day. You want to maximize your profit by choosing a single day to buy one stock and choosing a different day in the future to sell that stock. Return the maximum profit you can achieve.",
+        "examples": [
+            {"input": "prices = [7,1,5,3,6,4]", "output": "5", "explanation": "Buy on day 2 (price = 1) and sell on day 5 (price = 6), profit = 6-1 = 5."},
+            {"input": "prices = [7,6,4,3,1]", "output": "0", "explanation": "In this case, no transactions are done and max profit = 0."}
+        ],
+        "constraints": ["1 <= prices.length <= 10^5", "0 <= prices[i] <= 10^4"],
+        "starterCode": create_starter_code("maxProfit", "prices: list[int]", "int", "prices", "prices: number[]", "number", "int maxProfit(int[] prices)", "int maxProfit(vector<int>& prices)", "maxProfit(prices []int) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1)"},
+        "followUpQuestions": ["What if you can make multiple transactions (Stock II)?", "What if there is a transaction fee?"],
+        "rubric": {"clarification": "Can we sell before buying? (No).", "complexity_awareness": "O(N) single pass tracking min_price.", "edge_cases": "Strictly decreasing prices.", "verbal_clarity": "Clear one-pass greed/DP explanation."}
+    },
+    {
+        "id": "valid-palindrome",
+        "title": "Valid Palindrome",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Two Pointers",
+        "companyTags": ["Meta", "Microsoft", "Amazon"],
+        "description": "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward. Alphanumeric characters include letters and numbers. Given a string `s`, return `true` if it is a palindrome, or `false` otherwise.",
+        "examples": [
+            {"input": "s = \"A man, a plan, a canal: Panama\"", "output": "true", "explanation": "\"amanaplanacanalpanama\" is a palindrome."},
+            {"input": "s = \"race a car\"", "output": "false", "explanation": "\"raceacar\" is not a palindrome."}
+        ],
+        "constraints": ["1 <= s.length <= 2 * 10^5", "s consists only of printable ASCII characters."],
+        "starterCode": create_starter_code("isPalindrome", "s: str", "bool", "s", "s: string", "boolean", "boolean isPalindrome(String s)", "bool isPalindrome(string s)", "isPalindrome(s string) bool"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1)"},
+        "followUpQuestions": ["How to avoid creating a new filtered string?", "What character encodings to handle?"],
+        "rubric": {"clarification": "Are non-alphanumeric characters skipped?", "complexity_awareness": "In-place two pointers O(1) space.", "edge_cases": "Empty string or only spaces.", "verbal_clarity": "Left and right pointer convergence."}
+    },
+    {
+        "id": "invert-binary-tree",
+        "title": "Invert Binary Tree",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Trees",
+        "companyTags": ["Google", "Twitter", "Amazon"],
+        "description": "Given the `root` of a binary tree, invert the tree, and return its root. Inverting a binary tree swaps every left child with its right child recursively.",
+        "examples": [
+            {"input": "root = [4,2,7,1,3,6,9]", "output": "[4,7,2,9,6,3,1]", "explanation": "Every node's left and right subtrees are mirrored."},
+            {"input": "root = [2,1,3]", "output": "[2,3,1]", "explanation": "Left and right children swapped."}
+        ],
+        "constraints": ["The number of nodes in the tree is in the range [0, 100].", "-100 <= Node.val <= 100"],
+        "starterCode": create_starter_code("invertTree", "root", "TreeNode", "root", "root: TreeNode | null", "TreeNode | null", "TreeNode invertTree(TreeNode root)", "TreeNode* invertTree(TreeNode* root)", "invertTree(root *TreeNode) *TreeNode"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(H)"},
+        "followUpQuestions": ["How do you invert iteratively with a queue?", "What is maximum recursion depth?"],
+        "rubric": {"clarification": "Handled null tree?", "complexity_awareness": "Visits each node once in O(N).", "edge_cases": "Null root, skewed tree.", "verbal_clarity": "Post-order or pre-order swap."}
+    },
+    {
+        "id": "maximum-subarray",
+        "title": "Maximum Subarray",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Arrays & DP",
+        "companyTags": ["Amazon", "Apple", "Microsoft", "Google"],
+        "description": "Given an integer array `nums`, find the contiguous subarray (containing at least one number) which has the largest sum and return its sum (Kadane's Algorithm).",
+        "examples": [
+            {"input": "nums = [-2,1,-3,4,-1,2,1,-5,4]", "output": "6", "explanation": "[4,-1,2,1] has the largest sum = 6."},
+            {"input": "nums = [1]", "output": "1", "explanation": "Single element."}
+        ],
+        "constraints": ["1 <= nums.length <= 10^5", "-10^4 <= nums[i] <= 10^4"],
+        "starterCode": create_starter_code("maxSubArray", "nums: list[int]", "int", "nums", "nums: number[]", "number", "int maxSubArray(int[] nums)", "int maxSubArray(vector<int>& nums)", "maxSubArray(nums []int) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1)"},
+        "followUpQuestions": ["Can you solve this using Divide and Conquer in O(N log N)?", "How do you return the subarray indices?"],
+        "rubric": {"clarification": "Must subarray have at least one element?", "complexity_awareness": "Kadane's O(N) time and O(1) space.", "edge_cases": "All negative numbers.", "verbal_clarity": "Drop negative running sum."}
+    },
+    {
+        "id": "binary-search",
+        "title": "Binary Search",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Binary Search",
+        "companyTags": ["Microsoft", "Google", "Amazon"],
+        "description": "Given an array of integers `nums` which is sorted in ascending order, and an integer `target`, write a function to search `target` in `nums`. If `target` exists, then return its index. Otherwise, return `-1`.\n\nYou must write an algorithm with `O(log n)` runtime complexity.",
+        "examples": [
+            {"input": "nums = [-1,0,3,5,9,12], target = 9", "output": "4", "explanation": "9 exists in nums and its index is 4."},
+            {"input": "nums = [-1,0,3,5,9,12], target = 2", "output": "-1", "explanation": "2 does not exist in nums so return -1."}
+        ],
+        "constraints": ["1 <= nums.length <= 10^4", "-10^4 < nums[i], target < 10^4", "All integers in nums are unique.", "nums is sorted in ascending order."],
+        "starterCode": create_starter_code("search", "nums: list[int], target: int", "int", "nums, target", "nums: number[], target: number", "number", "int search(int[] nums, int target)", "int search(vector<int>& nums, int target)", "search(nums []int, target int) int"),
+        "expectedComplexity": {"time": "O(log N)", "space": "O(1)"},
+        "followUpQuestions": ["How to avoid integer overflow in mid calculation?", "What if array has duplicates?"],
+        "rubric": {"clarification": "Guaranteed sorted?", "complexity_awareness": "Halves search space each step.", "edge_cases": "Element at boundary or missing.", "verbal_clarity": "low + (high - low) // 2 formula."}
+    },
+    {
+        "id": "contains-duplicate",
+        "title": "Contains Duplicate",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Arrays & Hashing",
+        "companyTags": ["Apple", "Amazon", "Microsoft"],
+        "description": "Given an integer array `nums`, return `true` if any value appears at least twice in the array, and return `false` if every element is distinct.",
+        "examples": [
+            {"input": "nums = [1,2,3,1]", "output": "true", "explanation": "1 appears twice."},
+            {"input": "nums = [1,2,3,4]", "output": "false", "explanation": "All distinct."}
+        ],
+        "constraints": ["1 <= nums.length <= 10^5", "-10^9 <= nums[i] <= 10^9"],
+        "starterCode": create_starter_code("containsDuplicate", "nums: list[int]", "bool", "nums", "nums: number[]", "boolean", "boolean containsDuplicate(int[] nums)", "bool containsDuplicate(vector<int>& nums)", "containsDuplicate(nums []int) bool"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(N)"},
+        "followUpQuestions": ["Can we do O(1) space if we can mutate array (sorting)?", "What is the memory trade-off?"],
+        "rubric": {"clarification": "Can we use extra memory?", "complexity_awareness": "O(N) hash set lookup.", "edge_cases": "Array of length 1.", "verbal_clarity": "Early return on set match."}
+    },
+    {
+        "id": "maximum-depth-of-binary-tree",
+        "title": "Maximum Depth of Binary Tree",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Trees",
+        "companyTags": ["Meta", "Amazon", "Microsoft"],
+        "description": "Given the `root` of a binary tree, return its maximum depth. A binary tree's maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.",
+        "examples": [
+            {"input": "root = [3,9,20,null,null,15,7]", "output": "3", "explanation": "Longest branch has 3 nodes."},
+            {"input": "root = [1,null,2]", "output": "2", "explanation": "Depth 2."}
+        ],
+        "constraints": ["Number of nodes in tree is in range [0, 10^4].", "-100 <= Node.val <= 100"],
+        "starterCode": create_starter_code("maxDepth", "root", "int", "root", "root: TreeNode | null", "number", "int maxDepth(TreeNode root)", "int maxDepth(TreeNode* root)", "maxDepth(root *TreeNode) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(H)"},
+        "followUpQuestions": ["How to implement this with BFS level-order?", "What happens on degenerate linked-list tree?"],
+        "rubric": {"clarification": "Empty tree depth is 0.", "complexity_awareness": "O(N) time with O(H) stack.", "edge_cases": "Empty root, single node.", "verbal_clarity": "1 + max(left, right)."}
+    },
+    {
+        "id": "climbing-stairs",
+        "title": "Climbing Stairs",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Dynamic Programming",
+        "companyTags": ["Google", "Uber", "Amazon"],
+        "description": "You are climbing a staircase. It takes `n` steps to reach the top. Each time you can either climb `1` or `2` steps. In how many distinct ways can you climb to the top?",
+        "examples": [
+            {"input": "n = 2", "output": "2", "explanation": "1 step + 1 step, or 2 steps."},
+            {"input": "n = 3", "output": "3", "explanation": "1+1+1, 1+2, or 2+1."}
+        ],
+        "constraints": ["1 <= n <= 45"],
+        "starterCode": create_starter_code("climbStairs", "n: int", "int", "n", "n: number", "number", "int climbStairs(int n)", "int climbStairs(int n)", "climbStairs(n int) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1)"},
+        "followUpQuestions": ["How does this map directly to Fibonacci?", "Can this be done in O(log N) using matrix exponentiation?"],
+        "rubric": {"clarification": "Allowed step sizes (1 or 2).", "complexity_awareness": "O(1) space with two variables.", "edge_cases": "n=1, n=2.", "verbal_clarity": "dp[i] = dp[i-1] + dp[i-2]."}
+    },
+    {
+        "id": "symmetric-tree",
+        "title": "Symmetric Tree",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Trees",
+        "companyTags": ["Amazon", "Microsoft", "Bloomberg"],
+        "description": "Given the `root` of a binary tree, check whether it is a mirror of itself (i.e., symmetric around its center).",
+        "examples": [
+            {"input": "root = [1,2,2,3,4,4,3]", "output": "true", "explanation": "Symmetric mirror."},
+            {"input": "root = [1,2,2,null,3,null,3]", "output": "false", "explanation": "Asymmetric."}
+        ],
+        "constraints": ["Number of nodes in tree is in range [1, 1000].", "-100 <= Node.val <= 100"],
+        "starterCode": create_starter_code("isSymmetric", "root", "bool", "root", "root: TreeNode | null", "boolean", "boolean isSymmetric(TreeNode root)", "bool isSymmetric(TreeNode* root)", "isSymmetric(root *TreeNode) bool"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(H)"},
+        "followUpQuestions": ["Solve both recursively and iteratively with a queue?", "What compares with left.left and right.right?"],
+        "rubric": {"clarification": "Checked single node symmetry.", "complexity_awareness": "O(N) nodes checked in pairs.", "edge_cases": "Unbalanced null nodes.", "verbal_clarity": "Mirror helper function comparing t1 and t2."}
+    },
+    {
+        "id": "intersection-of-two-linked-lists",
+        "title": "Intersection of Two Linked Lists",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Linked List",
+        "companyTags": ["Airbnb", "Microsoft", "Amazon"],
+        "description": "Given the heads of two singly linked-lists `headA` and `headB`, return the node at which the two lists intersect. If the two linked lists have no intersection at all, return `null`.",
+        "examples": [
+            {"input": "intersectVal = 8, listA = [4,1,8,4,5], listB = [5,6,1,8,4,5]", "output": "Reference to node 8", "explanation": "Lists intersect at node with value 8."},
+            {"input": "intersectVal = 0, listA = [2,6,4], listB = [1,5]", "output": "null", "explanation": "No intersection."}
+        ],
+        "constraints": ["Number of nodes of listA is m, listB is n.", "1 <= m, n <= 3 * 10^4", "1 <= Node.val <= 10^5"],
+        "starterCode": create_starter_code("getIntersectionNode", "headA, headB", "ListNode", "headA, headB", "headA: ListNode | null, headB: ListNode | null", "ListNode | null", "ListNode getIntersectionNode(ListNode headA, ListNode headB)", "ListNode *getIntersectionNode(ListNode *headA, ListNode *headB)", "getIntersectionNode(headA, headB *ListNode) *ListNode"),
+        "expectedComplexity": {"time": "O(M + N)", "space": "O(1)"},
+        "followUpQuestions": ["Why does switching heads equalise path lengths?", "Can this be proven mathematically?"],
+        "rubric": {"clarification": "Are node values or references compared?", "complexity_awareness": "O(1) space two-pointer cycling.", "edge_cases": "No intersection, same head.", "verbal_clarity": "Pointer swap at end of list."}
+    },
+    {
+        "id": "single-number",
+        "title": "Single Number",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Bit Manipulation",
+        "companyTags": ["Amazon", "Google", "Meta"],
+        "description": "Given a non-empty array of integers `nums`, every element appears twice except for one. Find that single one. You must implement a solution with a linear runtime complexity and use only constant extra space.",
+        "examples": [
+            {"input": "nums = [2,2,1]", "output": "1", "explanation": "1 appears once."},
+            {"input": "nums = [4,1,2,1,2]", "output": "4", "explanation": "4 appears once."}
+        ],
+        "constraints": ["1 <= nums.length <= 3 * 10^4", "-3 * 10^4 <= nums[i] <= 3 * 10^4", "Each element appears twice except for one."],
+        "starterCode": create_starter_code("singleNumber", "nums: list[int]", "int", "nums", "nums: number[]", "number", "int singleNumber(int[] nums)", "int singleNumber(vector<int>& nums)", "singleNumber(nums []int) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1)"},
+        "followUpQuestions": ["Why does XOR property a ^ a = 0 and a ^ 0 = a work?", "What if elements appear 3 times (Single Number II)?"],
+        "rubric": {"clarification": "Strictly O(1) space required.", "complexity_awareness": "Bitwise XOR cumulative reduction.", "edge_cases": "Single element array.", "verbal_clarity": "XOR cancellation intuition."}
+    },
+    {
+        "id": "majority-element",
+        "title": "Majority Element",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Arrays & Hashing",
+        "companyTags": ["Meta", "Amazon", "Google"],
+        "description": "Given an array `nums` of size `n`, return the majority element. The majority element is the element that appears more than `⌊n / 2⌋` times. You may assume that the majority element always exists in the array.",
+        "examples": [
+            {"input": "nums = [3,2,3]", "output": "3", "explanation": "3 appears 2 times, which is > 3/2."},
+            {"input": "nums = [2,2,1,1,1,2,2]", "output": "2", "explanation": "2 appears 4 times out of 7."}
+        ],
+        "constraints": ["n == nums.length", "1 <= n <= 5 * 10^4", "-10^9 <= nums[i] <= 10^9"],
+        "starterCode": create_starter_code("majorityElement", "nums: list[int]", "int", "nums", "nums: number[]", "number", "int majorityElement(int[] nums)", "int majorityElement(vector<int>& nums)", "majorityElement(nums []int) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1)"},
+        "followUpQuestions": ["Explain the Boyer-Moore Voting Algorithm.", "What if majority is not guaranteed?"],
+        "rubric": {"clarification": "Is majority element always present?", "complexity_awareness": "Boyer-Moore O(1) space.", "edge_cases": "Single element.", "verbal_clarity": "Candidate and count increment/decrement."}
+    },
+    {
+        "id": "move-zeroes",
+        "title": "Move Zeroes",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Two Pointers",
+        "companyTags": ["Meta", "Bloomberg", "Amazon"],
+        "description": "Given an integer array `nums`, move all `0`'s to the end of it while maintaining the relative order of the non-zero elements. Note that you must do this in-place without making a copy of the array.",
+        "examples": [
+            {"input": "nums = [0,1,0,3,12]", "output": "[1,3,12,0,0]", "explanation": "Zeroes shifted to end in-place."},
+            {"input": "nums = [0]", "output": "[0]", "explanation": "Single zero."}
+        ],
+        "constraints": ["1 <= nums.length <= 10^4", "-2^31 <= nums[i] <= 2^31 - 1"],
+        "starterCode": create_starter_code("moveZeroes", "nums: list[int]", "None", "nums", "nums: number[]", "void", "void moveZeroes(int[] nums)", "void moveZeroes(vector<int>& nums)", "moveZeroes(nums []int)"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1)"},
+        "followUpQuestions": ["How do you minimize total write operations?", "Can we swap directly?"],
+        "rubric": {"clarification": "Relative order must be preserved.", "complexity_awareness": "Two pointers in-place O(1) space.", "edge_cases": "No zeroes, all zeroes.", "verbal_clarity": "Slow pointer write index."}
+    },
+    {
+        "id": "diameter-of-binary-tree",
+        "title": "Diameter of Binary Tree",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Trees",
+        "companyTags": ["Meta", "Amazon", "Bloomberg"],
+        "description": "Given the `root` of a binary tree, return the length of the diameter of the tree. The diameter of a binary tree is the length of the longest path between any two nodes in a tree. This path may or may not pass through the root.",
+        "examples": [
+            {"input": "root = [1,2,3,4,5]", "output": "3", "explanation": "Length of path [4,2,1,3] or [5,2,1,3] is 3 edges."},
+            {"input": "root = [1,2]", "output": "1", "explanation": "1 edge."}
+        ],
+        "constraints": ["Number of nodes in tree is in range [1, 10^4].", "-100 <= Node.val <= 100"],
+        "starterCode": create_starter_code("diameterOfBinaryTree", "root", "int", "root", "root: TreeNode | null", "number", "int diameterOfBinaryTree(TreeNode root)", "int diameterOfBinaryTree(TreeNode* root)", "diameterOfBinaryTree(root *TreeNode) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(H)"},
+        "followUpQuestions": ["Why does diameter not always pass through the root?", "What is returned from bottom-up DFS?"],
+        "rubric": {"clarification": "Diameter measured in edges, not nodes.", "complexity_awareness": "Post-order traversal visiting each node once.", "edge_cases": "Single node diameter is 0.", "verbal_clarity": "Left depth + right depth updates max diameter."}
+    },
+    {
+        "id": "middle-of-the-linked-list",
+        "title": "Middle of the Linked List",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Two Pointers",
+        "companyTags": ["Apple", "Google", "Amazon"],
+        "description": "Given the `head` of a singly linked list, return the middle node of the linked list. If there are two middle nodes, return the second middle node.",
+        "examples": [
+            {"input": "head = [1,2,3,4,5]", "output": "[3,4,5]", "explanation": "Middle node is 3."},
+            {"input": "head = [1,2,3,4,5,6]", "output": "[4,5,6]", "explanation": "Two middles (3, 4), returns second (4)."}
+        ],
+        "constraints": ["Number of nodes in the list is in range [1, 100].", "1 <= Node.val <= 100"],
+        "starterCode": create_starter_code("middleNode", "head", "ListNode", "head", "head: ListNode | null", "ListNode | null", "ListNode middleNode(ListNode head)", "ListNode* middleNode(ListNode* head)", "middleNode(head *ListNode) *ListNode"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1)"},
+        "followUpQuestions": ["Why does fast/slow pointer avoid two passes?", "What condition stops fast pointer?"],
+        "rubric": {"clarification": "Even length returns second middle.", "complexity_awareness": "Fast pointer 2x, slow 1x in O(N).", "edge_cases": "Single node, two nodes.", "verbal_clarity": "Tortoise and hare technique."}
+    },
+    {
+        "id": "ransom-note",
+        "title": "Ransom Note",
+        "difficulty": "Easy",
+        "difficultyColor": "green",
+        "category": "Hash Table",
+        "companyTags": ["Amazon", "Spotify", "Apple"],
+        "description": "Given two strings `ransomNote` and `magazine`, return `true` if `ransomNote` can be constructed by using the letters from `magazine` and `false` otherwise. Each letter in `magazine` can only be used once in `ransomNote`.",
+        "examples": [
+            {"input": "ransomNote = \"a\", magazine = \"b\"", "output": "false", "explanation": "Magazine lacks 'a'."},
+            {"input": "ransomNote = \"aa\", magazine = \"aab\"", "output": "true", "explanation": "Magazine has two 'a's."}
+        ],
+        "constraints": ["1 <= ransomNote.length, magazine.length <= 10^5", "Consists of lowercase English letters."],
+        "starterCode": create_starter_code("canConstruct", "ransomNote: str, magazine: str", "bool", "ransomNote, magazine", "ransomNote: string, magazine: string", "boolean", "boolean canConstruct(String ransomNote, String magazine)", "bool canConstruct(string ransomNote, string magazine)", "canConstruct(ransomNote string, magazine string) bool"),
+        "expectedComplexity": {"time": "O(N + M)", "space": "O(1) 26 letters"},
+        "followUpQuestions": ["Can we use an int[26] array instead of hash table?", "What if unicode characters are present?"],
+        "rubric": {"clarification": "Letters cannot be reused.", "complexity_awareness": "Frequency counting in O(N + M).", "edge_cases": "Ransom note longer than magazine.", "verbal_clarity": "Character frequency decrements."}
+    }
+]
+
+# Medium Questions (20)
+medium_questions = [
+    {
+        "id": "longest-substring-without-repeating-characters",
+        "title": "Longest Substring Without Repeating Characters",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Sliding Window",
+        "companyTags": ["Amazon", "Google", "Meta", "Bloomberg"],
+        "description": "Given a string `s`, find the length of the longest substring without repeating characters.",
+        "examples": [
+            {"input": "s = \"abcabcbb\"", "output": "3", "explanation": "The answer is \"abc\", with the length of 3."},
+            {"input": "s = \"bbbbb\"", "output": "1", "explanation": "The answer is \"b\", with the length of 1."}
+        ],
+        "constraints": ["0 <= s.length <= 5 * 10^4", "s consists of English letters, digits, symbols and spaces."],
+        "starterCode": create_starter_code("lengthOfLongestSubstring", "s: str", "int", "s", "s: string", "number", "int lengthOfLongestSubstring(String s)", "int lengthOfLongestSubstring(string s)", "lengthOfLongestSubstring(s string) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(min(N, M))"},
+        "followUpQuestions": ["How to jump the left pointer directly using last seen index?", "What is worst case if string contains all unique chars?"],
+        "rubric": {"clarification": "Substring must be contiguous.", "complexity_awareness": "Sliding window O(N) single pass.", "edge_cases": "Empty string, spaces.", "verbal_clarity": "Window boundary expansion and contraction."}
+    },
+    {
+        "id": "search-in-rotated-sorted-array",
+        "title": "Search in Rotated Sorted Array",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Binary Search",
+        "companyTags": ["Meta", "Microsoft", "Google", "Amazon"],
+        "description": "Given the array `nums` after the possible rotation and an integer `target`, return the index of `target` if it is in `nums`, or `-1` if it is not in `nums`. You must write an algorithm with `O(log n)` runtime complexity.",
+        "examples": [
+            {"input": "nums = [4,5,6,7,0,1,2], target = 0", "output": "4", "explanation": "0 is at index 4."},
+            {"input": "nums = [4,5,6,7,0,1,2], target = 3", "output": "-1", "explanation": "3 is not present."}
+        ],
+        "constraints": ["1 <= nums.length <= 5000", "-10^4 <= nums[i], target <= 10^4", "All values of nums are unique."],
+        "starterCode": create_starter_code("search", "nums: list[int], target: int", "int", "nums, target", "nums: number[], target: number", "number", "int search(int[] nums, int target)", "int search(vector<int>& nums, int target)", "search(nums []int, target int) int"),
+        "expectedComplexity": {"time": "O(log N)", "space": "O(1)"},
+        "followUpQuestions": ["How do you identify which half is sorted?", "What if array contains duplicates (Search in Rotated II)?"],
+        "rubric": {"clarification": "Strictly O(log N) required.", "complexity_awareness": "Binary search on sorted half.", "edge_cases": "Array not rotated, 1 element.", "verbal_clarity": "Testing if target lies in sorted segment."}
+    },
+    {
+        "id": "number-of-islands",
+        "title": "Number of Islands",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Graphs & BFS/DFS",
+        "companyTags": ["Amazon", "Google", "Bloomberg", "Meta"],
+        "description": "Given an `m x n` 2D binary grid `grid` which represents a map of `'1'`s (land) and `'0'`s (water), return the number of islands. An island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically.",
+        "examples": [
+            {"input": "grid = [[\"1\",\"1\",\"0\"],[\"1\",\"1\",\"0\"],[\"0\",\"0\",\"1\"]]", "output": "2", "explanation": "Two distinct islands."}
+        ],
+        "constraints": ["m == grid.length", "n == grid[i].length", "1 <= m, n <= 300", "grid[i][j] is '0' or '1'."],
+        "starterCode": create_starter_code("numIslands", "grid: list[list[str]]", "int", "grid", "grid: string[][]", "number", "int numIslands(char[][] grid)", "int numIslands(vector<vector<char>>& grid)", "numIslands(grid [][]byte) int"),
+        "expectedComplexity": {"time": "O(M * N)", "space": "O(M * N)"},
+        "followUpQuestions": ["How to avoid recursion stack overflow using iterative BFS?", "Can Disjoint Set Union (Union-Find) solve this?"],
+        "rubric": {"clarification": "Diagonal connections do not count.", "complexity_awareness": "Each cell visited bounded number of times.", "edge_cases": "All water, all land.", "verbal_clarity": "Flooding/sinking visited land."}
+    },
+    {
+        "id": "coin-change",
+        "title": "Coin Change",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Dynamic Programming",
+        "companyTags": ["Amazon", "ByteDance", "Microsoft", "Google"],
+        "description": "You are given an integer array `coins` representing coins of different denominations and an integer `amount` representing a total amount of money. Return the fewest number of coins that you need to make up that amount. If that amount of money cannot be made up, return `-1`.",
+        "examples": [
+            {"input": "coins = [1,2,5], amount = 11", "output": "3", "explanation": "11 = 5 + 5 + 1"},
+            {"input": "coins = [2], amount = 3", "output": "-1", "explanation": "Cannot form 3 with 2."}
+        ],
+        "constraints": ["1 <= coins.length <= 12", "1 <= coins[i] <= 2^31 - 1", "0 <= amount <= 10^4"],
+        "starterCode": create_starter_code("coinChange", "coins: list[int], amount: int", "int", "coins, amount", "coins: number[], amount: number", "number", "int coinChange(int[] coins, int amount)", "int coinChange(vector<int>& coins, int amount)", "coinChange(coins []int, amount int) int"),
+        "expectedComplexity": {"time": "O(amount * len(coins))", "space": "O(amount)"},
+        "followUpQuestions": ["Why doesn't greedy work here?", "How does bottom-up compare to top-down memoization?"],
+        "rubric": {"clarification": "Can coins be reused indefinitely?", "complexity_awareness": "dp[a] = min(dp[a], 1 + dp[a - coin]).", "edge_cases": "amount = 0 returns 0.", "verbal_clarity": "Counterexample to greedy algorithm."}
+    },
+    {
+        "id": "merge-intervals",
+        "title": "Merge Intervals",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Intervals & Sorting",
+        "companyTags": ["Meta", "Google", "Amazon", "Microsoft"],
+        "description": "Given an array of `intervals` where `intervals[i] = [start_i, end_i]`, merge all overlapping intervals, and return an array of the non-overlapping intervals that cover all the intervals in the input.",
+        "examples": [
+            {"input": "intervals = [[1,3],[2,6],[8,10],[15,18]]", "output": "[[1,6],[8,10],[15,18]]", "explanation": "Intervals [1,3] and [2,6] overlap into [1,6]."}
+        ],
+        "constraints": ["1 <= intervals.length <= 10^4", "intervals[i].length == 2", "0 <= start_i <= end_i <= 10^4"],
+        "starterCode": create_starter_code("merge", "intervals: list[list[int]]", "list[list[int]]", "intervals", "intervals: number[][]", "number[][]", "int[][] merge(int[][] intervals)", "vector<vector<int>> merge(vector<vector<int>>& intervals)", "merge(intervals [][]int) [][]int"),
+        "expectedComplexity": {"time": "O(N log N)", "space": "O(N)"},
+        "followUpQuestions": ["How do you handle intervals already sorted by start time?", "How to solve Insert Interval (new interval insertion)?"],
+        "rubric": {"clarification": "Are intervals sorted initially?", "complexity_awareness": "Sorting bottleneck O(N log N).", "edge_cases": "Completely nested intervals.", "verbal_clarity": "Sort by start and extend end."}
+    },
+    {
+        "id": "top-k-frequent-elements",
+        "title": "Top K Frequent Elements",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Heap & Bucket Sort",
+        "companyTags": ["Amazon", "Meta", "Netflix", "Uber"],
+        "description": "Given an integer array `nums` and an integer `k`, return the `k` most frequent elements. You may return the answer in any order. Your algorithm's time complexity must be better than `O(n log n)`.",
+        "examples": [
+            {"input": "nums = [1,1,1,2,2,3], k = 2", "output": "[1,2]", "explanation": "1 appears 3 times, 2 appears 2 times."},
+            {"input": "nums = [1], k = 1", "output": "[1]", "explanation": "Only one element."}
+        ],
+        "constraints": ["1 <= nums.length <= 10^5", "-10^4 <= nums[i] <= 10^4", "k is in range [1, number of unique elements]."],
+        "starterCode": create_starter_code("topKFrequent", "nums: list[int], k: int", "list[int]", "nums, k", "nums: number[], k: number", "number[]", "int[] topKFrequent(int[] nums, int k)", "vector<int> topKFrequent(vector<int>& nums, int k)", "topKFrequent(nums []int, k int) []int"),
+        "expectedComplexity": {"time": "O(N) with Bucket Sort or O(N log K) with Min-Heap", "space": "O(N)"},
+        "followUpQuestions": ["Can this be done in O(N) linear time using Bucket Sort?", "How does Min-Heap of size K maintain top elements?"],
+        "rubric": {"clarification": "Is k guaranteed <= unique elements?", "complexity_awareness": "Min-heap O(N log K) vs Bucket Sort O(N).", "edge_cases": "All elements have same frequency.", "verbal_clarity": "Frequency mapping and ranking."}
+    },
+    {
+        "id": "lowest-common-ancestor-of-a-binary-tree",
+        "title": "Lowest Common Ancestor of a Binary Tree",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Trees",
+        "companyTags": ["Meta", "Microsoft", "Amazon", "Apple"],
+        "description": "Given a binary tree, find the lowest common ancestor (LCA) of two given nodes `p` and `q`. The lowest common ancestor is defined between two nodes `p` and `q` as the lowest node in `T` that has both `p` and `q` as descendants (where we allow a node to be a descendant of itself).",
+        "examples": [
+            {"input": "root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1", "output": "3", "explanation": "LCA of 5 and 1 is 3."},
+            {"input": "root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 4", "output": "5", "explanation": "LCA of 5 and 4 is 5."}
+        ],
+        "constraints": ["Number of nodes in tree is in range [2, 10^5].", "All Node.val are unique.", "p != q", "p and q will exist in the tree."],
+        "starterCode": create_starter_code("lowestCommonAncestor", "root, p, q", "TreeNode", "root, p, q", "root: TreeNode | null, p: TreeNode | null, q: TreeNode | null", "TreeNode | null", "TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q)", "TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q)", "lowestCommonAncestor(root, p, q *TreeNode) *TreeNode"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(H)"},
+        "followUpQuestions": ["What if it was a Binary Search Tree (BST)?", "What if nodes might not exist in the tree?"],
+        "rubric": {"clarification": "Can a node be ancestor of itself? (Yes).", "complexity_awareness": "Visits each node once in post-order DFS.", "edge_cases": "One node is ancestor of the other.", "verbal_clarity": "Left and right return null bubbling."}
+    },
+    {
+        "id": "implement-trie",
+        "title": "Implement Trie (Prefix Tree)",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Tries & Trees",
+        "companyTags": ["Google", "Twitter", "Amazon", "Microsoft"],
+        "description": "A trie (pronounced as \"try\") or prefix tree is a tree data structure used to efficiently store and retrieve keys in a dataset of strings. Implement the `Trie` class with `insert`, `search`, and `startsWith` methods.",
+        "examples": [
+            {"input": "trie.insert(\"apple\"); trie.search(\"apple\"); trie.search(\"app\"); trie.startsWith(\"app\");", "output": "[null, true, false, true]", "explanation": "Trie prefix operations."}
+        ],
+        "constraints": ["1 <= word.length, prefix.length <= 2000", "word and prefix consist only of lowercase English letters.", "At most 3 * 10^4 calls will be made."],
+        "starterCode": {
+            "python": "class Trie:\n    def __init__(self):\n        self.children = {}\n        self.is_end = False\n\n    def insert(self, word: str) -> None:\n        pass\n\n    def search(self, word: str) -> bool:\n        pass\n\n    def startsWith(self, prefix: str) -> bool:\n        pass\n",
+            "javascript": "class Trie {\n    constructor() {\n        this.children = {};\n        this.isEnd = false;\n    }\n    insert(word) {}\n    search(word) {}\n    startsWith(prefix) {}\n}\n",
+            "typescript": "class Trie {\n    private children: Map<string, Trie> = new Map();\n    private isEnd: boolean = false;\n    insert(word: string): void {}\n    search(word: string): boolean { return false; }\n    startsWith(prefix: string): boolean { return false; }\n}\n",
+            "java": "class Trie {\n    public Trie() {}\n    public void insert(String word) {}\n    public boolean search(String word) { return false; }\n    public boolean startsWith(String prefix) { return false; }\n}\n",
+            "cpp": "class Trie {\npublic:\n    Trie() {}\n    void insert(string word) {}\n    bool search(string word) { return false; }\n    bool startsWith(string prefix) { return false; }\n};\n",
+            "go": "type Trie struct {}\nfunc Constructor() Trie { return Trie{} }\nfunc (this *Trie) Insert(word string) {}\nfunc (this *Trie) Search(word string) bool { return false }\nfunc (this *Trie) StartsWith(prefix string) bool { return false }\n"
+        },
+        "expectedComplexity": {"time": "O(L) per operation", "space": "O(total characters * alphabet size)"},
+        "followUpQuestions": ["How does Trie compare to Hash Set for prefix searches?", "How to implement wildcard search (like WordDictionary)?"],
+        "rubric": {"clarification": "Lowercase english only (26 branches).", "complexity_awareness": "O(L) word length lookup.", "edge_cases": "Prefix exists but not full word.", "verbal_clarity": "TrieNode with children and isEnd flag."}
+    },
+    {
+        "id": "word-break",
+        "title": "Word Break",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Dynamic Programming",
+        "companyTags": ["Meta", "Amazon", "Apple", "Bloomberg"],
+        "description": "Given a string `s` and a dictionary of strings `wordDict`, return `true` if `s` can be segmented into a space-separated sequence of one or more dictionary words. The same word in the dictionary may be reused multiple times.",
+        "examples": [
+            {"input": "s = \"leetcode\", wordDict = [\"leet\",\"code\"]", "output": "true", "explanation": "\"leetcode\" can be segmented as \"leet code\"."},
+            {"input": "s = \"catsandog\", wordDict = [\"cats\",\"dog\",\"sand\",\"and\",\"cat\"]", "output": "false", "explanation": "Cannot segment."}
+        ],
+        "constraints": ["1 <= s.length <= 300", "1 <= wordDict.length <= 1000", "1 <= wordDict[i].length <= 20", "s and wordDict[i] consist of lowercase English letters."],
+        "starterCode": create_starter_code("wordBreak", "s: str, wordDict: list[str]", "bool", "s, wordDict", "s: string, wordDict: string[]", "boolean", "boolean wordBreak(String s, List<String> wordDict)", "bool wordBreak(string s, vector<string>& wordDict)", "wordBreak(s string, wordDict []string) bool"),
+        "expectedComplexity": {"time": "O(N^2 * M)", "space": "O(N)"},
+        "followUpQuestions": ["How to return all valid sentences (Word Break II)?", "How does Trie optimize inner prefix match?"],
+        "rubric": {"clarification": "Words can be reused.", "complexity_awareness": "dp[i] boolean array.", "edge_cases": "Unmatchable suffix, overlapping words.", "verbal_clarity": "DP state transition definition."}
+    },
+    {
+        "id": "course-schedule",
+        "title": "Course Schedule",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Graphs & Topological Sort",
+        "companyTags": ["Google", "Amazon", "Microsoft", "Uber"],
+        "description": "There are a total of `numCourses` courses you have to take, labeled from `0` to `numCourses - 1`. You are given an array `prerequisites` where `prerequisites[i] = [a, b]` indicates that you must take course `b` first if you want to take course `a`. Return `true` if you can finish all courses. Otherwise, return `false`.",
+        "examples": [
+            {"input": "numCourses = 2, prerequisites = [[1,0]]", "output": "true", "explanation": "Take course 0 then course 1."},
+            {"input": "numCourses = 2, prerequisites = [[1,0],[0,1]]", "output": "false", "explanation": "Cycle exists."}
+        ],
+        "constraints": ["1 <= numCourses <= 2000", "0 <= prerequisites.length <= 5000", "prerequisites[i].length == 2"],
+        "starterCode": create_starter_code("canFinish", "numCourses: int, prerequisites: list[list[int]]", "bool", "numCourses, prerequisites", "numCourses: number, prerequisites: number[][]", "boolean", "boolean canFinish(int numCourses, int[][] prerequisites)", "bool canFinish(int numCourses, vector<vector<int>>& prerequisites)", "canFinish(numCourses int, prerequisites [][]int) bool"),
+        "expectedComplexity": {"time": "O(V + E)", "space": "O(V + E)"},
+        "followUpQuestions": ["Explain Kahn's BFS vs 3-color DFS cycle detection.", "How to output the topological sort order (Course Schedule II)?"],
+        "rubric": {"clarification": "Graph can have disconnected components.", "complexity_awareness": "O(V + E) linear in vertices and edges.", "edge_cases": "Self-loops, no prerequisites.", "verbal_clarity": "In-degree queue vs recursion stack."}
+    },
+    {
+        "id": "lru-cache",
+        "title": "LRU Cache",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Design & Hash Map",
+        "companyTags": ["Google", "Amazon", "Microsoft", "Meta", "Apple"],
+        "description": "Design a data structure that follows the constraints of a Least Recently Used (LRU) cache. Implement the `LRUCache` class with `get(key)` and `put(key, value)` in `O(1)` average time complexity.",
+        "examples": [
+            {"input": "LRUCache lRUCache = new LRUCache(2); lRUCache.put(1, 1); lRUCache.put(2, 2); lRUCache.get(1); lRUCache.put(3, 3); // evicts 2", "output": "[null, null, null, 1, null]", "explanation": "Key 2 was evicted because key 1 was accessed."}
+        ],
+        "constraints": ["1 <= capacity <= 3000", "0 <= key <= 10^4", "0 <= value <= 10^5", "At most 2 * 10^5 calls."],
+        "starterCode": {
+            "python": "class LRUCache:\n    def __init__(self, capacity: int):\n        pass\n\n    def get(self, key: int) -> int:\n        return -1\n\n    def put(self, key: int, value: int) -> None:\n        pass\n",
+            "javascript": "class LRUCache {\n    constructor(capacity) {}\n    get(key) { return -1; }\n    put(key, value) {}\n}\n",
+            "typescript": "class LRUCache {\n    constructor(capacity: number) {}\n    get(key: number): number { return -1; }\n    put(key: number, value: number): void {}\n}\n",
+            "java": "class LRUCache {\n    public LRUCache(int capacity) {}\n    public int get(int key) { return -1; }\n    public void put(int key, int value) {}\n}\n",
+            "cpp": "class LRUCache {\npublic:\n    LRUCache(int capacity) {}\n    int get(int key) { return -1; }\n    void put(int key, int value) {}\n};\n",
+            "go": "type LRUCache struct {}\nfunc Constructor(capacity int) LRUCache { return LRUCache{} }\nfunc (this *LRUCache) Get(key int) int { return -1 }\nfunc (this *LRUCache) Put(key int, value int) {}\n"
+        },
+        "expectedComplexity": {"time": "O(1) for get and put", "space": "O(capacity)"},
+        "followUpQuestions": ["Why is Doubly Linked List necessary rather than Singly Linked List?", "How do dummy head and tail sentinel nodes simplify pointer manipulation?"],
+        "rubric": {"clarification": "Evicts least recently used on capacity overflow.", "complexity_awareness": "O(1) guarantee requires hash map + doubly linked list.", "edge_cases": "Updating existing key value, capacity 1.", "verbal_clarity": "Node removal and insertion at head."}
+    },
+    {
+        "id": "3sum",
+        "title": "3Sum",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Two Pointers",
+        "companyTags": ["Meta", "Amazon", "Apple", "Microsoft"],
+        "description": "Given an integer array `nums`, return all the triplets `[nums[i], nums[j], nums[k]]` such that `i != j`, `i != k`, and `j != k`, and `nums[i] + nums[j] + nums[k] == 0`. Notice that the solution set must not contain duplicate triplets.",
+        "examples": [
+            {"input": "nums = [-1,0,1,2,-1,-4]", "output": "[[-1,-1,2],[-1,0,1]]", "explanation": "Unique triplets that sum to 0."},
+            {"input": "nums = [0,1,1]", "output": "[]", "explanation": "No valid triplet."}
+        ],
+        "constraints": ["3 <= nums.length <= 3000", "-10^5 <= nums[i] <= 10^5"],
+        "starterCode": create_starter_code("threeSum", "nums: list[int]", "list[list[int]]", "nums", "nums: number[]", "number[][]", "List<List<Integer>> threeSum(int[] nums)", "vector<vector<int>> threeSum(vector<int>& nums)", "threeSum(nums []int) [][]int"),
+        "expectedComplexity": {"time": "O(N^2)", "space": "O(1) extra space"},
+        "followUpQuestions": ["How to avoid duplicates without a Hash Set?", "How does sorting enable two-pointer convergence?"],
+        "rubric": {"clarification": "Triplets cannot be duplicates.", "complexity_awareness": "Sort O(N log N) + Two Pointers O(N^2).", "edge_cases": "All zeroes, no valid triplet.", "verbal_clarity": "Fixing i and sliding left/right."}
+    },
+    {
+        "id": "container-with-most-water",
+        "title": "Container With Most Water",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Two Pointers",
+        "companyTags": ["Google", "Amazon", "Meta"],
+        "description": "You are given an integer array `height` of length `n`. There are `n` vertical lines drawn such that the two endpoints of the `i-th` line are `(i, 0)` and `(i, height[i])`. Find two lines that together with the x-axis form a container, such that the container contains the most water. Return the maximum amount of water a container can store.",
+        "examples": [
+            {"input": "height = [1,8,6,2,5,4,8,3,7]", "output": "49", "explanation": "Lines at index 1 and 8 hold 7 * (8-1) = 49."},
+            {"input": "height = [1,1]", "output": "1", "explanation": "Area is 1."}
+        ],
+        "constraints": ["n == height.length", "2 <= n <= 10^5", "0 <= height[i] <= 10^4"],
+        "starterCode": create_starter_code("maxArea", "height: list[int]", "int", "height", "height: number[]", "number", "int maxArea(int[] height)", "int maxArea(vector<int>& height)", "maxArea(height []int) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1)"},
+        "followUpQuestions": ["Why does moving the shorter pointer guarantee not missing a larger area?", "Can this be proven greedily?"],
+        "rubric": {"clarification": "Container cannot be slanted.", "complexity_awareness": "O(N) two pointers vs O(N^2) brute force.", "edge_cases": "All equal heights.", "verbal_clarity": "Moving the shorter line inwards."}
+    },
+    {
+        "id": "group-anagrams",
+        "title": "Group Anagrams",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Hash Table & Strings",
+        "companyTags": ["Amazon", "Meta", "Google"],
+        "description": "Given an array of strings `strs`, group the anagrams together. You can return the answer in any order. An Anagram is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.",
+        "examples": [
+            {"input": "strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]", "output": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]", "explanation": "Grouped anagrams."},
+            {"input": "strs = [\"\"]", "output": "[[\"\"]]", "explanation": "Empty string."}
+        ],
+        "constraints": ["1 <= strs.length <= 10^4", "0 <= strs[i].length <= 100", "strs[i] consists of lowercase English letters."],
+        "starterCode": create_starter_code("groupAnagrams", "strs: list[str]", "list[list[str]]", "strs", "strs: string[]", "string[][]", "List<List<String>> groupAnagrams(String[] strs)", "vector<vector<string>> groupAnagrams(vector<string>& strs)", "groupAnagrams(strs []string) [][]string"),
+        "expectedComplexity": {"time": "O(N * K log K) or O(N * K)", "space": "O(N * K)"},
+        "followUpQuestions": ["Can character frequency counts be used as keys instead of sorting?", "What is the memory trade-off?"],
+        "rubric": {"clarification": "Lowercase letters only.", "complexity_awareness": "Categorizing by sorted string or tuple key.", "edge_cases": "Empty string, single character words.", "verbal_clarity": "Hash map grouping by canonical key."}
+    },
+    {
+        "id": "product-of-array-except-self",
+        "title": "Product of Array Except Self",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Prefix & Suffix",
+        "companyTags": ["Amazon", "Apple", "Microsoft"],
+        "description": "Given an integer array `nums`, return an array `answer` such that `answer[i]` is equal to the product of all the elements of `nums` except `nums[i]`. You must write an algorithm that runs in `O(n)` time and without using the division operation.",
+        "examples": [
+            {"input": "nums = [1,2,3,4]", "output": "[24,12,8,6]", "explanation": "Calculated without division."},
+            {"input": "nums = [-1,1,0,-3,3]", "output": "[0,0,9,0,0]", "explanation": "Zero handled."}
+        ],
+        "constraints": ["2 <= nums.length <= 10^5", "-30 <= nums[i] <= 30", "Product of any prefix or suffix fits in 32-bit integer."],
+        "starterCode": create_starter_code("productExceptSelf", "nums: list[int]", "list[int]", "nums", "nums: number[]", "number[]", "int[] productExceptSelf(int[] nums)", "vector<int> productExceptSelf(vector<int>& nums)", "productExceptSelf(nums []int) []int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1) extra space excluding output"},
+        "followUpQuestions": ["Can you solve in O(1) auxiliary space by using the output array?", "Why is division forbidden?"],
+        "rubric": {"clarification": "Division is not allowed.", "complexity_awareness": "Left prefix pass + right suffix accumulator.", "edge_cases": "Multiple zeroes, negative numbers.", "verbal_clarity": "Prefix product multiplied by suffix product."}
+    },
+    {
+        "id": "longest-palindromic-substring",
+        "title": "Longest Palindromic Substring",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Two Pointers / DP",
+        "companyTags": ["Amazon", "Microsoft", "Meta"],
+        "description": "Given a string `s`, return the longest palindromic substring in `s`.",
+        "examples": [
+            {"input": "s = \"babad\"", "output": "\"bab\"", "explanation": "\"aba\" is also a valid answer."},
+            {"input": "s = \"cbbd\"", "output": "\"bb\"", "explanation": "\"bb\" is the longest palindrome."}
+        ],
+        "constraints": ["1 <= s.length <= 1000", "s consist of only digits and English letters."],
+        "starterCode": create_starter_code("longestPalindrome", "s: str", "str", "s", "s: string", "string", "String longestPalindrome(String s)", "string longestPalindrome(string s)", "longestPalindrome(s string) string"),
+        "expectedComplexity": {"time": "O(N^2)", "space": "O(1)"},
+        "followUpQuestions": ["How does expand-around-center compare to O(N^2) DP?", "Can Manacher's Algorithm achieve O(N)?"],
+        "rubric": {"clarification": "Handles both odd and even length centers.", "complexity_awareness": "O(N^2) center expansion with O(1) space.", "edge_cases": "Single character, all same characters.", "verbal_clarity": "Expand around center i and (i, i+1)."}
+    },
+    {
+        "id": "validate-binary-search-tree",
+        "title": "Validate Binary Search Tree",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Trees & DFS",
+        "companyTags": ["Meta", "Amazon", "Bloomberg"],
+        "description": "Given the `root` of a binary tree, determine if it is a valid binary search tree (BST). A valid BST is defined as: The left subtree of a node contains only nodes with keys less than the node's key. The right subtree of a node contains only nodes with keys greater than the node's key. Both the left and right subtrees must also be binary search trees.",
+        "examples": [
+            {"input": "root = [2,1,3]", "output": "true", "explanation": "Valid BST."},
+            {"input": "root = [5,1,4,null,null,3,6]", "output": "false", "explanation": "Root node 5 is greater than right child 4."}
+        ],
+        "constraints": ["Number of nodes in tree is in range [1, 10^4].", "-2^31 <= Node.val <= 2^31 - 1"],
+        "starterCode": create_starter_code("isValidBST", "root", "bool", "root", "root: TreeNode | null", "boolean", "boolean isValidBST(TreeNode root)", "bool isValidBST(TreeNode* root)", "isValidBST(root *TreeNode) bool"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(H)"},
+        "followUpQuestions": ["Why is it insufficient to just check parent vs direct children?", "How does inorder traversal produce strictly increasing sequence?"],
+        "rubric": {"clarification": "Strict inequality required (duplicates invalid).", "complexity_awareness": "O(N) with min/max range boundaries.", "edge_cases": "Node values at Integer.MIN_VALUE or MAX_VALUE.", "verbal_clarity": "Carrying min_val and max_val bounds down the tree."}
+    },
+    {
+        "id": "subarray-sum-equals-k",
+        "title": "Subarray Sum Equals K",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Prefix Sum & Hash Map",
+        "companyTags": ["Meta", "Google", "Amazon"],
+        "description": "Given an array of integers `nums` and an integer `k`, return the total number of subarrays whose sum equals to `k`. A subarray is a contiguous non-empty sequence of elements within an array.",
+        "examples": [
+            {"input": "nums = [1,1,1], k = 2", "output": "2", "explanation": "[1,1] at index (0,1) and (1,2)."},
+            {"input": "nums = [1,2,3], k = 3", "output": "2", "explanation": "[1,2] and [3]."}
+        ],
+        "constraints": ["1 <= nums.length <= 2 * 10^4", "-1000 <= nums[i] <= 1000", "-10^7 <= k <= 10^7"],
+        "starterCode": create_starter_code("subarraySum", "nums: list[int], k: int", "int", "nums, k", "nums: number[], k: number", "number", "int subarraySum(int[] nums, int k)", "int subarraySum(vector<int>& nums, int k)", "subarraySum(nums []int, k int) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(N)"},
+        "followUpQuestions": ["Why can't sliding window be used when negative numbers exist?", "What is the initial state in the prefix frequency map?"],
+        "rubric": {"clarification": "Negative numbers can be present.", "complexity_awareness": "Prefix sum hash map in O(N).", "edge_cases": "nums has negative values, map[0] = 1.", "verbal_clarity": "prefix_sum - k lookup in hash map."}
+    },
+    {
+        "id": "rotting-oranges",
+        "title": "Rotting Oranges",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Multi-Source BFS",
+        "companyTags": ["Amazon", "Bloomberg", "Google"],
+        "description": "You are given an `m x n` grid where each cell can have one of three values: `0` representing an empty cell, `1` representing a fresh orange, or `2` representing a rotten orange. Every minute, any fresh orange that is 4-directionally adjacent to a rotten orange becomes rotten. Return the minimum number of minutes that must elapse until no cell has a fresh orange. If this is impossible, return `-1`.",
+        "examples": [
+            {"input": "grid = [[2,1,1],[1,1,0],[0,1,1]]", "output": "4", "explanation": "4 minutes for all oranges to rot."},
+            {"input": "grid = [[2,1,1],[0,1,1],[1,0,1]]", "output": "-1", "explanation": "Orange at bottom-left cannot be reached."}
+        ],
+        "constraints": ["m == grid.length", "n == grid[i].length", "1 <= m, n <= 10", "grid[i][j] is 0, 1, or 2."],
+        "starterCode": create_starter_code("orangesRotting", "grid: list[list[int]]", "int", "grid", "grid: number[][]", "number", "int orangesRotting(int[][] grid)", "int orangesRotting(vector<vector<int>>& grid)", "orangesRotting(grid [][]int) int"),
+        "expectedComplexity": {"time": "O(M * N)", "space": "O(M * N)"},
+        "followUpQuestions": ["Why is Multi-source BFS preferred over DFS here?", "How to track minutes level by level?"],
+        "rubric": {"clarification": "Multiple rotten oranges rot in parallel.", "complexity_awareness": "BFS queue with level size loop.", "edge_cases": "No fresh oranges initially (returns 0).", "verbal_clarity": "Queue initialization with all initial rotten oranges."}
+    },
+    {
+        "id": "daily-temperatures",
+        "title": "Daily Temperatures",
+        "difficulty": "Medium",
+        "difficultyColor": "orange",
+        "category": "Monotonic Stack",
+        "companyTags": ["Amazon", "Google", "Meta"],
+        "description": "Given an array of integers `temperatures` represents the daily temperatures, return an array `answer` such that `answer[i]` is the number of days you have to wait after the `i-th` day to get a warmer temperature. If there is no future day for which this is possible, keep `answer[i] == 0` instead.",
+        "examples": [
+            {"input": "temperatures = [73,74,75,71,69,72,76,73]", "output": "[1,1,4,2,1,1,0,0]", "explanation": "Days to wait for a warmer day."},
+            {"input": "temperatures = [30,40,50,60]", "output": "[1,1,1,0]", "explanation": "Next day is always warmer."}
+        ],
+        "constraints": ["1 <= temperatures.length <= 10^5", "30 <= temperatures[i] <= 100"],
+        "starterCode": create_starter_code("dailyTemperatures", "temperatures: list[int]", "list[int]", "temperatures", "temperatures: number[]", "number[]", "int[] dailyTemperatures(int[] temperatures)", "vector<int> dailyTemperatures(vector<int>& temperatures)", "dailyTemperatures(temperatures []int) []int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(N)"},
+        "followUpQuestions": ["Explain why each index is pushed and popped at most once.", "What is the order maintained in the monotonic stack?"],
+        "rubric": {"clarification": "No warmer day outputs 0.", "complexity_awareness": "Amortized O(1) per element with stack.", "edge_cases": "Strictly decreasing temperatures.", "verbal_clarity": "Monotonic decreasing stack of indices."}
+    }
+]
+
+# Hard Questions (20)
+hard_questions = [
+    {
+        "id": "trapping-rain-water",
+        "title": "Trapping Rain Water",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Two Pointers & Monotonic Stack",
+        "companyTags": ["Google", "Amazon", "Meta", "Goldman Sachs"],
+        "description": "Given `n` non-negative integers representing an elevation map where the width of each bar is `1`, compute how much water it can trap after raining.",
+        "examples": [
+            {"input": "height = [0,1,0,2,1,0,1,3,2,1,2,1]", "output": "6", "explanation": "6 units of rain water are being trapped."},
+            {"input": "height = [4,2,0,3,2,5]", "output": "9", "explanation": "9 units of water trapped."}
+        ],
+        "constraints": ["n == height.length", "1 <= n <= 2 * 10^4", "0 <= height[i] <= 10^5"],
+        "starterCode": create_starter_code("trap", "height: list[int]", "int", "height", "height: number[]", "number", "int trap(int[] height)", "int trap(vector<int>& height)", "trap(height []int) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1) with two pointers"},
+        "followUpQuestions": ["Why does moving the pointer with smaller max guarantee correct water height?", "How to solve using Monotonic Stack?"],
+        "rubric": {"clarification": "Water depends on min(max_left, max_right) - height[i].", "complexity_awareness": "O(N) time with O(1) space two pointers.", "edge_cases": "Decreasing or flat elevations.", "verbal_clarity": "Left_max and right_max bounds."}
+    },
+    {
+        "id": "merge-k-sorted-lists",
+        "title": "Merge k Sorted Lists",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Heap & Divide and Conquer",
+        "companyTags": ["Meta", "Amazon", "Google", "Microsoft"],
+        "description": "You are given an array of `k` linked-lists `lists`, each linked-list is sorted in ascending order. Merge all the linked-lists into one sorted linked-list and return it.",
+        "examples": [
+            {"input": "lists = [[1,4,5],[1,3,4],[2,6]]", "output": "[1,1,2,3,4,4,5,6]", "explanation": "Merged list."},
+            {"input": "lists = []", "output": "[]", "explanation": "Empty lists."}
+        ],
+        "constraints": ["k == lists.length", "0 <= k <= 10^4", "0 <= lists[i].length <= 500", "-10^4 <= lists[i][j] <= 10^4", "Sorted in ascending order."],
+        "starterCode": create_starter_code("mergeKLists", "lists", "ListNode", "lists", "lists: Array<ListNode | null>", "ListNode | null", "ListNode mergeKLists(ListNode[] lists)", "ListNode* mergeKLists(vector<ListNode*>& lists)", "mergeKLists(lists []*ListNode) *ListNode"),
+        "expectedComplexity": {"time": "O(N log K)", "space": "O(K) heap"},
+        "followUpQuestions": ["Compare Min-Heap of size K vs Divide & Conquer merge pairwise.", "What is space complexity of divide and conquer?"],
+        "rubric": {"clarification": "Empty lists handled.", "complexity_awareness": "O(N log K) where N is total nodes.", "edge_cases": "Lists containing empty heads.", "verbal_clarity": "Min-heap storing current node of each list."}
+    },
+    {
+        "id": "median-of-two-sorted-arrays",
+        "title": "Median of Two Sorted Arrays",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Binary Search",
+        "companyTags": ["Google", "Amazon", "Apple", "Microsoft"],
+        "description": "Given two sorted arrays `nums1` and `nums2` of size `m` and `n` respectively, return the median of the two sorted arrays. The overall run time complexity should be `O(log(m + n))`.",
+        "examples": [
+            {"input": "nums1 = [1,3], nums2 = [2]", "output": "2.00000", "explanation": "Merged [1,2,3] median is 2."},
+            {"input": "nums1 = [1,2], nums2 = [3,4]", "output": "2.50000", "explanation": "(2+3)/2 = 2.5."}
+        ],
+        "constraints": ["nums1.length == m", "nums2.length == n", "0 <= m <= 1000", "0 <= n <= 1000", "1 <= m + n <= 2000"],
+        "starterCode": create_starter_code("findMedianSortedArrays", "nums1: list[int], nums2: list[int]", "float", "nums1, nums2", "nums1: number[], nums2: number[]", "number", "double findMedianSortedArrays(int[] nums1, int[] nums2)", "double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2)", "findMedianSortedArrays(nums1 []int, nums2 []int) float64"),
+        "expectedComplexity": {"time": "O(log(min(M, N)))", "space": "O(1)"},
+        "followUpQuestions": ["Why binary search on the smaller array?", "How to handle even vs odd total lengths?"],
+        "rubric": {"clarification": "Strict O(log(M+N)) requires binary search.", "complexity_awareness": "Partitioning halves such that left <= right.", "edge_cases": "One array empty, negative numbers.", "verbal_clarity": "Partition index mapping."}
+    },
+    {
+        "id": "binary-tree-maximum-path-sum",
+        "title": "Binary Tree Maximum Path Sum",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Trees & DFS",
+        "companyTags": ["Meta", "Google", "Uber", "Amazon"],
+        "description": "A path in a binary tree is a sequence of nodes where each pair of adjacent nodes has an edge connecting them. Return the maximum path sum of any non-empty path.",
+        "examples": [
+            {"input": "root = [1,2,3]", "output": "6", "explanation": "2 -> 1 -> 3 has sum 6."},
+            {"input": "root = [-10,9,20,null,null,15,7]", "output": "42", "explanation": "15 -> 20 -> 7 has sum 42."}
+        ],
+        "constraints": ["Number of nodes in tree is in range [1, 3 * 10^4].", "-1000 <= Node.val <= 1000"],
+        "starterCode": create_starter_code("maxPathSum", "root", "int", "root", "root: TreeNode | null", "number", "int maxPathSum(TreeNode root)", "int maxPathSum(TreeNode* root)", "maxPathSum(root *TreeNode) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(H)"},
+        "followUpQuestions": ["Why do we drop negative gains with max(0, gain)?", "Differentiate path passing through node vs path extending to parent."],
+        "rubric": {"clarification": "Path does not have to pass through root.", "complexity_awareness": "Post-order DFS visits each node once.", "edge_cases": "All negative values.", "verbal_clarity": "Global max update vs branch return."}
+    },
+    {
+        "id": "alien-dictionary",
+        "title": "Alien Dictionary",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Graph Topological Sort",
+        "companyTags": ["Meta", "Amazon", "Airbnb", "Google"],
+        "description": "There is a new alien language that uses the English alphabet. However, the order of the letters is unknown to you. You are given a list of strings `words` from the alien language's dictionary, where the strings are sorted lexicographically by the rules of this new language. Return a string of the unique letters in the new alien language sorted in lexicographically increasing order. If there is no valid ordering, return `\"\"`.",
+        "examples": [
+            {"input": "words = [\"wrt\",\"wrf\",\"er\",\"ett\",\"rftt\"]", "output": "\"wertf\"", "explanation": "Valid character order."},
+            {"input": "words = [\"z\",\"x\",\"z\"]", "output": "\"\"", "explanation": "Cycle detected: z < x and x < z."}
+        ],
+        "constraints": ["1 <= words.length <= 100", "1 <= words[i].length <= 100", "words[i] consists of only lowercase English letters."],
+        "starterCode": create_starter_code("alienOrder", "words: list[str]", "str", "words", "words: string[]", "string", "String alienOrder(String[] words)", "string alienOrder(vector<string>& words)", "alienOrder(words []string) string"),
+        "expectedComplexity": {"time": "O(C) total characters", "space": "O(1) 26 letters"},
+        "followUpQuestions": ["How to detect invalid prefix edge case e.g. ['abc', 'ab']?", "Explain topological sort using BFS in-degrees."],
+        "rubric": {"clarification": "Cycle returns empty string.", "complexity_awareness": "Graph construction + Topological sort in O(C).", "edge_cases": "Prefix violations, isolated letters.", "verbal_clarity": "Comparing adjacent word mismatches."}
+    },
+    {
+        "id": "edit-distance",
+        "title": "Edit Distance",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Dynamic Programming",
+        "companyTags": ["Google", "Amazon", "Microsoft"],
+        "description": "Given two strings `word1` and `word2`, return the minimum number of operations required to convert `word1` to `word2`. You have the following three operations permitted on a word: Insert a character, Delete a character, Replace a character.",
+        "examples": [
+            {"input": "word1 = \"horse\", word2 = \"ros\"", "output": "3", "explanation": "horse -> rorse -> rose -> ros."},
+            {"input": "word1 = \"intention\", word2 = \"execution\"", "output": "5", "explanation": "5 operations."}
+        ],
+        "constraints": ["0 <= word1.length, word2.length <= 500", "Consist of lowercase English letters."],
+        "starterCode": create_starter_code("minDistance", "word1: str, word2: str", "int", "word1, word2", "word1: string, word2: string", "number", "int minDistance(String word1, String word2)", "int minDistance(string word1, string word2)", "minDistance(word1 string, word2 string) int"),
+        "expectedComplexity": {"time": "O(M * N)", "space": "O(min(M, N)) with space optimization"},
+        "followUpQuestions": ["How does Wagner-Fischer 2D table work?", "How to reduce space from O(M*N) to O(N)?"],
+        "rubric": {"clarification": "All 3 operations cost 1.", "complexity_awareness": "dp[i][j] transition min(insert, delete, replace).", "edge_cases": "One or both strings empty.", "verbal_clarity": "Diagonal match vs 1 + min(left, up, diag)."}
+    },
+    {
+        "id": "word-ladder",
+        "title": "Word Ladder",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "BFS Shortest Path",
+        "companyTags": ["Amazon", "Google", "Meta", "Uber"],
+        "description": "A transformation sequence from word `beginWord` to word `endWord` using a dictionary `wordList` is a sequence of words `beginWord -> s_1 -> s_2 -> ... -> s_k` such that: every adjacent pair differs by a single letter, every `s_i` is in `wordList`. Return the number of words in the shortest transformation sequence from `beginWord` to `endWord`, or `0` if no such sequence exists.",
+        "examples": [
+            {"input": "beginWord = \"hit\", endWord = \"cog\", wordList = [\"hot\",\"dot\",\"dog\",\"lot\",\"log\",\"cog\"]", "output": "5", "explanation": "\"hit\" -> \"hot\" -> \"dot\" -> \"dog\" -> \"cog\"."},
+            {"input": "beginWord = \"hit\", endWord = \"cog\", wordList = [\"hot\",\"dot\",\"dog\",\"lot\",\"log\"]", "output": "0", "explanation": "\"cog\" is not in wordList."}
+        ],
+        "constraints": ["1 <= beginWord.length <= 10", "endWord.length == beginWord.length", "1 <= wordList.length <= 5000"],
+        "starterCode": create_starter_code("ladderLength", "beginWord: str, endWord: str, wordList: list[str]", "int", "beginWord, endWord, wordList", "beginWord: string, endWord: string, wordList: string[]", "number", "int ladderLength(String beginWord, String endWord, List<String> wordList)", "int ladderLength(string beginWord, string endWord, vector<string>& wordList)", "ladderLength(beginWord string, endWord string, wordList []string) int"),
+        "expectedComplexity": {"time": "O(M^2 * N)", "space": "O(M * N)"},
+        "followUpQuestions": ["Why is Bidirectional BFS significantly faster?", "How to generate next word variations efficiently?"],
+        "rubric": {"clarification": "endWord must be in wordList.", "complexity_awareness": "BFS guarantees shortest path in unweighted graph.", "edge_cases": "endWord not present, beginWord = endWord.", "verbal_clarity": "26 char replacements per position."}
+    },
+    {
+        "id": "minimum-window-substring",
+        "title": "Minimum Window Substring",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Sliding Window",
+        "companyTags": ["Meta", "Uber", "Amazon", "Google"],
+        "description": "Given two strings `s` and `t` of lengths `m` and `n` respectively, return the minimum window substring of `s` such that every character in `t` (including duplicates) is included in the window. If there is no such substring, return the empty string `\"\"`.",
+        "examples": [
+            {"input": "s = \"ADOBECODEBANC\", t = \"ABC\"", "output": "\"BANC\"", "explanation": "\"BANC\" includes 'A', 'B', 'C'."},
+            {"input": "s = \"a\", t = \"aa\"", "output": "\"\"", "explanation": "t requires two 'a's."}
+        ],
+        "constraints": ["m == s.length", "n == t.length", "1 <= m, n <= 10^5", "s and t consist of uppercase and lowercase English letters."],
+        "starterCode": create_starter_code("minWindow", "s: str, t: str", "str", "s, t", "s: string, t: string", "string", "String minWindow(String s, String t)", "string minWindow(string s, string t)", "minWindow(s string, t string) string"),
+        "expectedComplexity": {"time": "O(M + N)", "space": "O(M + N)"},
+        "followUpQuestions": ["How to track 'have' vs 'need' match count in O(1)?", "What if characters can be Unicode?"],
+        "rubric": {"clarification": "Window must include duplicate occurrences.", "complexity_awareness": "Sliding window with left/right pointer O(M).", "edge_cases": "t longer than s, exact match.", "verbal_clarity": "Expand right to satisfy, shrink left to minimize."}
+    },
+    {
+        "id": "largest-rectangle-in-histogram",
+        "title": "Largest Rectangle in Histogram",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Monotonic Stack",
+        "companyTags": ["Google", "Amazon", "Meta"],
+        "description": "Given an array of integers `heights` representing the histogram's bar height where the width of each bar is `1`, return the area of the largest rectangle in the histogram.",
+        "examples": [
+            {"input": "heights = [2,1,5,6,2,3]", "output": "10", "explanation": "Heights 5 and 6 form 5 * 2 = 10."},
+            {"input": "heights = [2,4]", "output": "4", "explanation": "2 * 2 = 4."}
+        ],
+        "constraints": ["1 <= heights.length <= 10^5", "0 <= heights[i] <= 10^4"],
+        "starterCode": create_starter_code("largestRectangleArea", "heights: list[int]", "int", "heights", "heights: number[]", "number", "int largestRectangleArea(int[] heights)", "int largestRectangleArea(vector<int>& heights)", "largestRectangleArea(heights []int) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(N)"},
+        "followUpQuestions": ["Why does monotonic increasing stack identify left/right limits?", "How does this apply to Maximal Rectangle in 2D binary matrix?"],
+        "rubric": {"clarification": "Rectangles must be contiguous.", "complexity_awareness": "Every index pushed/popped once in O(N).", "edge_cases": "Monotonically increasing or decreasing heights.", "verbal_clarity": "Popped height width calculation."}
+    },
+    {
+        "id": "sliding-window-maximum",
+        "title": "Sliding Window Maximum",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Monotonic Deque",
+        "companyTags": ["Amazon", "Google", "Meta"],
+        "description": "You are given an array of integers `nums`, there is a sliding window of size `k` which is moving from the very left of the array to the very right. You can only see the `k` numbers in the window. Each time the sliding window moves right by one position. Return the max sliding window.",
+        "examples": [
+            {"input": "nums = [1,3,-1,-3,5,3,6,7], k = 3", "output": "[3,3,5,5,6,7]", "explanation": "Max element of each window."},
+            {"input": "nums = [1], k = 1", "output": "[1]", "explanation": "Single window."}
+        ],
+        "constraints": ["1 <= nums.length <= 10^5", "-10^4 <= nums[i] <= 10^4", "1 <= k <= nums.length"],
+        "starterCode": create_starter_code("maxSlidingWindow", "nums: list[int], k: int", "list[int]", "nums, k", "nums: number[], k: number", "number[]", "int[] maxSlidingWindow(int[] nums, int k)", "vector<int> maxSlidingWindow(vector<int>& nums, int k)", "maxSlidingWindow(nums []int, k int) []int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(K)"},
+        "followUpQuestions": ["Why is Monotonic Deque O(N) while Max-Heap is O(N log K)?", "What invariant does the deque maintain?"],
+        "rubric": {"clarification": "Strict linear time requirement.", "complexity_awareness": "Deque stores indices in decreasing value order.", "edge_cases": "k = 1, k = len(nums).", "verbal_clarity": "Evicting smaller elements from back."}
+    },
+    {
+        "id": "n-queens",
+        "title": "N-Queens",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Backtracking",
+        "companyTags": ["Amazon", "Microsoft", "Meta"],
+        "description": "The n-queens puzzle is the problem of placing `n` queens on an `n x n` chessboard such that no two queens attack each other. Given an integer `n`, return all distinct solutions to the n-queens puzzle. You may return the answer in any order.",
+        "examples": [
+            {"input": "n = 4", "output": "[[ \".Q..\",\"...Q\",\"Q...\",\"..Q.\"],[\"..Q.\",\"Q...\",\"...Q\",\".Q..\"]]", "explanation": "Two 4-queens arrangements."},
+            {"input": "n = 1", "output": "[[\"Q\"]]", "explanation": "Single square."}
+        ],
+        "constraints": ["1 <= n <= 9"],
+        "starterCode": create_starter_code("solveNQueens", "n: int", "list[list[str]]", "n", "n: number", "string[][]", "List<List<String>> solveNQueens(int n)", "vector<vector<string>> solveNQueens(int n)", "solveNQueens(n int) [][]string"),
+        "expectedComplexity": {"time": "O(N!)", "space": "O(N)"},
+        "followUpQuestions": ["How to track diagonal conflicts with sets in O(1)?", "What mathematical formula represents positive vs negative diagonals?"],
+        "rubric": {"clarification": "Row, col, and both diagonals cannot conflict.", "complexity_awareness": "Backtracking search pruning.", "edge_cases": "n=2, n=3 have 0 solutions.", "verbal_clarity": "col, (r+c), (r-c) conflict sets."}
+    },
+    {
+        "id": "serialize-and-deserialize-binary-tree",
+        "title": "Serialize and Deserialize Binary Tree",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Trees & BFS/DFS",
+        "companyTags": ["Meta", "Uber", "Amazon", "Microsoft"],
+        "description": "Design an algorithm to serialize and deserialize a binary tree. Serialization is the process of converting a data structure into a sequence of bits so that it can be stored in a file or memory buffer. Deserialization reconstructs the original tree.",
+        "examples": [
+            {"input": "root = [1,2,3,null,null,4,5]", "output": "[1,2,3,null,null,4,5]", "explanation": "Round-trip conversion."}
+        ],
+        "constraints": ["Number of nodes in tree is in range [0, 10^4].", "-1000 <= Node.val <= 1000"],
+        "starterCode": {
+            "python": "class Codec:\n    def serialize(self, root) -> str:\n        pass\n\n    def deserialize(self, data: str):\n        pass\n",
+            "javascript": "class Codec {\n    serialize(root) { return \"\"; }\n    deserialize(data) { return null; }\n}\n",
+            "typescript": "class Codec {\n    serialize(root: TreeNode | null): string { return \"\"; }\n    deserialize(data: string): TreeNode | null { return null; }\n}\n",
+            "java": "public class Codec {\n    public String serialize(TreeNode root) { return \"\"; }\n    public TreeNode deserialize(String data) { return null; }\n}\n",
+            "cpp": "class Codec {\npublic:\n    string serialize(TreeNode* root) { return \"\"; }\n    TreeNode* deserialize(string data) { return nullptr; }\n};\n",
+            "go": "type Codec struct {}\nfunc Constructor() Codec { return Codec{} }\nfunc (this *Codec) serialize(root *TreeNode) string { return \"\" }\nfunc (this *Codec) deserialize(data string) *TreeNode { return nil }\n"
+        },
+        "expectedComplexity": {"time": "O(N)", "space": "O(N)"},
+        "followUpQuestions": ["How to represent null nodes uniquely?", "Pre-order DFS vs Level-order BFS differences."],
+        "rubric": {"clarification": "No specific format mandated as long as round-trip matches.", "complexity_awareness": "Linear time serialization and deserialization.", "edge_cases": "Empty tree returns empty string.", "verbal_clarity": "Delimited string with sentinel for nulls."}
+    },
+    {
+        "id": "first-missing-positive",
+        "title": "First Missing Positive",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Array Index Hashing",
+        "companyTags": ["Amazon", "Meta", "Microsoft"],
+        "description": "Given an unsorted integer array `nums`, return the smallest positive integer that is not present in `nums`. You must implement an algorithm that runs in `O(n)` time and uses `O(1)` auxiliary space.",
+        "examples": [
+            {"input": "nums = [1,2,0]", "output": "3", "explanation": "3 is smallest missing positive."},
+            {"input": "nums = [3,4,-1,1]", "output": "2", "explanation": "2 is missing."}
+        ],
+        "constraints": ["1 <= nums.length <= 10^5", "-2^31 <= nums[i] <= 2^31 - 1"],
+        "starterCode": create_starter_code("firstMissingPositive", "nums: list[int]", "int", "nums", "nums: number[]", "number", "int firstMissingPositive(int[] nums)", "int firstMissingPositive(vector<int>& nums)", "firstMissingPositive(nums []int) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1)"},
+        "followUpQuestions": ["Why can the answer only be in range [1, N+1]?", "How does cyclic sort place nums[i] into index nums[i]-1?"],
+        "rubric": {"clarification": "Strict O(1) space constraint.", "complexity_awareness": "In-place cyclic swap O(N) time.", "edge_cases": "All negative, array already [1..N].", "verbal_clarity": "Array as its own hash table."}
+    },
+    {
+        "id": "reverse-nodes-in-k-group",
+        "title": "Reverse Nodes in k-Group",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Linked List",
+        "companyTags": ["Microsoft", "Amazon", "Apple"],
+        "description": "Given the `head` of a linked list, reverse the nodes of the list `k` at a time, and return the modified list. `k` is a positive integer and is less than or equal to the length of the linked list. If the number of nodes is not a multiple of `k` then left-out nodes, in the end, should remain as it is. You may not alter the values in the list's nodes, only nodes themselves may be changed.",
+        "examples": [
+            {"input": "head = [1,2,3,4,5], k = 2", "output": "[2,1,4,3,5]", "explanation": "Groups of 2 reversed."},
+            {"input": "head = [1,2,3,4,5], k = 3", "output": "[3,2,1,4,5]", "explanation": "Remaining 2 nodes left untouched."}
+        ],
+        "constraints": ["The number of nodes in the list is n.", "1 <= k <= n <= 5000", "0 <= Node.val <= 1000"],
+        "starterCode": create_starter_code("reverseKGroup", "head, k: int", "ListNode", "head, k", "head: ListNode | null, k: number", "ListNode | null", "ListNode reverseKGroup(ListNode head, int k)", "ListNode* reverseKGroup(ListNode* head, int k)", "reverseKGroup(head *ListNode, k int) *ListNode"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1)"},
+        "followUpQuestions": ["How do you check if k nodes exist before reversing?", "Can this be done iteratively with constant space?"],
+        "rubric": {"clarification": "Leftover nodes < k are not reversed.", "complexity_awareness": "O(1) memory pointer manipulation.", "edge_cases": "k = 1, k = n.", "verbal_clarity": "Splitting into sublists of size k and linking."}
+    },
+    {
+        "id": "regular-expression-matching",
+        "title": "Regular Expression Matching",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Dynamic Programming",
+        "companyTags": ["Google", "Meta", "Amazon"],
+        "description": "Given an input string `s` and a pattern `p`, implement regular expression matching with support for `'.'` and `'*'` where: `'.'` Matches any single character. `'*'` Matches zero or more of the preceding element. The matching should cover the entire input string (not partial).",
+        "examples": [
+            {"input": "s = \"aa\", p = \"a*\"", "output": "true", "explanation": "'*' means zero or more of 'a'."},
+            {"input": "s = \"ab\", p = \".*\"", "output": "true", "explanation": "'.*' matches any string."}
+        ],
+        "constraints": ["1 <= s.length <= 20", "1 <= p.length <= 20", "s contains only lowercase English letters.", "p contains lowercase letters, '.', and '*'."],
+        "starterCode": create_starter_code("isMatch", "s: str, p: str", "bool", "s, p", "s: string, p: string", "boolean", "boolean isMatch(String s, String p)", "bool isMatch(string s, string p)", "isMatch(s string, p string) bool"),
+        "expectedComplexity": {"time": "O(M * N)", "space": "O(M * N)"},
+        "followUpQuestions": ["How do you handle zero matches of preceding element for '*'?", "Compare top-down memoization vs bottom-up DP."],
+        "rubric": {"clarification": "'*' always follows a preceding character.", "complexity_awareness": "dp[i][j] representing s[i:] matches p[j:].", "edge_cases": "Patterns like 'a*b*c*'.", "verbal_clarity": "Two branches for star: skip or match."}
+    },
+    {
+        "id": "word-search-ii",
+        "title": "Word Search II",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Trie & Backtracking",
+        "companyTags": ["Uber", "Amazon", "Meta"],
+        "description": "Given an `m x n` `board` of characters and a list of strings `words`, return all words on the board. Each word must be constructed from letters of sequentially adjacent cells, where adjacent cells are horizontally or vertically neighboring. The same letter cell may not be used more than once in a word.",
+        "examples": [
+            {"input": "board = [[\"o\",\"a\",\"a\",\"n\"],[\"e\",\"t\",\"a\",\"e\"],[\"i\",\"h\",\"k\",\"r\"],[\"i\",\"f\",\"l\",\"v\"]], words = [\"oath\",\"pea\",\"eat\",\"rain\"]", "output": "[\"eat\",\"oath\"]", "explanation": "Found on board."}
+        ],
+        "constraints": ["m == board.length", "n == board[i].length", "1 <= m, n <= 12", "1 <= words.length <= 3 * 10^4", "1 <= words[i].length <= 10"],
+        "starterCode": create_starter_code("findWords", "board: list[list[str]], words: list[str]", "list[str]", "board, words", "board: string[][], words: string[]", "string[]", "List<String> findWords(char[][] board, String[] words)", "vector<string> findWords(vector<vector<char>>& board, vector<string>& words)", "findWords(board [][]byte, words []string) []string"),
+        "expectedComplexity": {"time": "O(M * N * 4^(L))", "space": "O(total characters in words)"},
+        "followUpQuestions": ["Why is Trie much faster than running Word Search I for each word?", "How to prune words from Trie once found?"],
+        "rubric": {"clarification": "No reusing cell in same word.", "complexity_awareness": "Trie prefix pruning terminates invalid branches early.", "edge_cases": "Duplicate words in result.", "verbal_clarity": "DFS with in-place board masking."}
+    },
+    {
+        "id": "burst-balloons",
+        "title": "Burst Balloons",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Interval Dynamic Programming",
+        "companyTags": ["Google", "Amazon", "ByteDance"],
+        "description": "You are given `n` balloons, indexed from `0` to `n - 1`. Each balloon is painted with a number on it represented by an array `nums`. You are asked to burst all the balloons. If you burst balloon `i` you will get `nums[i - 1] * nums[i] * nums[i + 1]` coins. If `i - 1` or `i + 1` goes out of bounds, treat it as if there is a balloon with a `1` painted on it. Return the maximum coins you can collect by bursting the balloons wisely.",
+        "examples": [
+            {"input": "nums = [3,1,5,8]", "output": "167", "explanation": "nums = [3,1,5,8] -> [3,5,8] -> [3,8] -> [8] -> [] coins = 167."}
+        ],
+        "constraints": ["n == nums.length", "1 <= n <= 300", "0 <= nums[i] <= 100"],
+        "starterCode": create_starter_code("maxCoins", "nums: list[int]", "int", "nums", "nums: number[]", "number", "int maxCoins(int[] nums)", "int maxCoins(vector<int>& nums)", "maxCoins(nums []int) int"),
+        "expectedComplexity": {"time": "O(N^3)", "space": "O(N^2)"},
+        "followUpQuestions": ["Why do we think in reverse (which balloon bursts LAST)?", "How does interval DP decouple subproblems?"],
+        "rubric": {"clarification": "Boundaries padded with 1.", "complexity_awareness": "O(N^3) interval DP over window lengths.", "edge_cases": "nums has length 1.", "verbal_clarity": "Last balloon to burst maintains fixed boundaries."}
+    },
+    {
+        "id": "longest-valid-parentheses",
+        "title": "Longest Valid Parentheses",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Stack / DP",
+        "companyTags": ["Amazon", "Google", "Meta"],
+        "description": "Given a string containing just the characters `'('` and `')'`, return the length of the longest valid (well-formed) parentheses substring.",
+        "examples": [
+            {"input": "s = \")()())\"", "output": "4", "explanation": "\"()()\" length is 4."},
+            {"input": "s = \"(()\"", "output": "2", "explanation": "\"()\" length is 2."}
+        ],
+        "constraints": ["0 <= s.length <= 3 * 10^4", "s[i] is '(' or ')'."],
+        "starterCode": create_starter_code("longestValidParentheses", "s: str", "int", "s", "s: string", "number", "int longestValidParentheses(String s)", "int longestValidParentheses(string s)", "longestValidParentheses(s string) int"),
+        "expectedComplexity": {"time": "O(N)", "space": "O(1) two-pass or O(N) stack"},
+        "followUpQuestions": ["Can this be done in O(1) space with left-to-right and right-to-left counts?", "How does stack index initialization with -1 work?"],
+        "rubric": {"clarification": "Substring must be contiguous.", "complexity_awareness": "O(N) single pass with index stack.", "edge_cases": "Empty string, only open or close brackets.", "verbal_clarity": "Stack stores index of last unmatched bracket."}
+    },
+    {
+        "id": "russian-doll-envelopes",
+        "title": "Russian Doll Envelopes",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Binary Search & LIS",
+        "companyTags": ["Google", "Apple", "Uber"],
+        "description": "You are given a 2D array of integers `envelopes` where `envelopes[i] = [w_i, h_i]` represents the width and the height of an envelope. One envelope can fit into another if and only if both the width and height of one envelope are strictly greater than the other. Return the maximum number of envelopes you can Russian doll (i.e., put one inside the other). You cannot rotate an envelope.",
+        "examples": [
+            {"input": "envelopes = [[5,4],[6,4],[6,7],[2,3]]", "output": "3", "explanation": "[2,3] => [5,4] => [6,7]."}
+        ],
+        "constraints": ["1 <= envelopes.length <= 10^5", "envelopes[i].length == 2", "1 <= w_i, h_i <= 10^5"],
+        "starterCode": create_starter_code("maxEnvelopes", "envelopes: list[list[int]]", "int", "envelopes", "envelopes: number[][]", "number", "int maxEnvelopes(int[][] envelopes)", "int maxEnvelopes(vector<vector<int>>& envelopes)", "maxEnvelopes(envelopes [][]int) int"),
+        "expectedComplexity": {"time": "O(N log N)", "space": "O(N)"},
+        "followUpQuestions": ["Why sort width ascending and height descending?", "How does height descending prevent choosing envelopes of same width?"],
+        "rubric": {"clarification": "Both width and height must be strictly greater.", "complexity_awareness": "Reduction to Longest Increasing Subsequence O(N log N).", "edge_cases": "Same widths.", "verbal_clarity": "Patience sorting / bisect on heights."}
+    },
+    {
+        "id": "find-median-from-data-stream",
+        "title": "Find Median from Data Stream",
+        "difficulty": "Hard",
+        "difficultyColor": "red",
+        "category": "Two Heaps",
+        "companyTags": ["Google", "Amazon", "Apple", "Microsoft"],
+        "description": "The median is the middle value in an ordered integer list. Implement the `MedianFinder` class with `addNum(num)` and `findMedian()`.",
+        "examples": [
+            {"input": "addNum(1); addNum(2); findMedian() -> 1.5; addNum(3); findMedian() -> 2.0", "output": "[null, null, 1.5, null, 2.0]", "explanation": "Streaming median calculation."}
+        ],
+        "constraints": ["-10^5 <= num <= 10^5", "At least one element before calling findMedian.", "At most 5 * 10^4 calls."],
+        "starterCode": {
+            "python": "class MedianFinder:\n    def __init__(self):\n        pass\n\n    def addNum(self, num: int) -> None:\n        pass\n\n    def findMedian(self) -> float:\n        return 0.0\n",
+            "javascript": "class MedianFinder {\n    constructor() {}\n    addNum(num) {}\n    findMedian() { return 0.0; }\n}\n",
+            "typescript": "class MedianFinder {\n    constructor() {}\n    addNum(num: number): void {}\n    findMedian(): number { return 0.0; }\n}\n",
+            "java": "class MedianFinder {\n    public MedianFinder() {}\n    public void addNum(int num) {}\n    public double findMedian() { return 0.0; }\n}\n",
+            "cpp": "class MedianFinder {\npublic:\n    MedianFinder() {}\n    void addNum(int num) {}\n    double findMedian() { return 0.0; }\n};\n",
+            "go": "type MedianFinder struct {}\nfunc Constructor() MedianFinder { return MedianFinder{} }\nfunc (this *MedianFinder) AddNum(num int) {}\nfunc (this *MedianFinder) FindMedian() float64 { return 0.0 }\n"
+        },
+        "expectedComplexity": {"time": "O(log N) for addNum, O(1) for findMedian", "space": "O(N)"},
+        "followUpQuestions": ["How do Max-Heap (small half) and Min-Heap (large half) balance?", "What if 99% of numbers are in range [0..100]?"],
+        "rubric": {"clarification": "Even count returns average of two medians.", "complexity_awareness": "Two heaps balance size within diff <= 1.", "edge_cases": "Equal elements, negative elements.", "verbal_clarity": "Max heap of lower half, min heap of upper half."}
+    }
+]
+
+all_questions = easy_questions + medium_questions + hard_questions
+
+print(f"Easy questions: {len(easy_questions)}")
+print(f"Medium questions: {len(medium_questions)}")
+print(f"Hard questions: {len(hard_questions)}")
+print(f"Total questions: {len(all_questions)}")
+
+with open("backend/data/questions.json", "w", encoding="utf-8") as f:
+    json.dump(all_questions, f, indent=2)
+
+with open("frontend/src/data/questions.json", "w", encoding="utf-8") as f:
+    json.dump(all_questions, f, indent=2)
+
+print("Successfully written 60 questions to backend and frontend!")

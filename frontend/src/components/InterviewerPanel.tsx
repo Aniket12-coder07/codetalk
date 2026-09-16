@@ -42,7 +42,7 @@ export const InterviewerPanel: React.FC<InterviewerPanelProps> = ({
       className="flex flex-col h-full"
     >
       {/* Header with Stage & Manual Trigger */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b-3 border-black/10">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b-3 border-black/10 dark:border-white/10">
         <div className="flex items-center gap-2">
           {currentTurn ? (
             <Badge color={stageColorMap[currentTurn.stage] || 'purple'} className="uppercase">
@@ -77,22 +77,22 @@ export const InterviewerPanel: React.FC<InterviewerPanelProps> = ({
         {currentTurn ? (
           <>
             {/* Direct Interviewer Question Bubble */}
-            <div className="bg-white border-3 border-black rounded-[18px] p-4 shadow-neo space-y-2">
-              <div className="flex items-center gap-2 text-xs font-black text-neo-purple uppercase tracking-wider">
-                <Bot className="w-4 h-4 text-black" />
+            <div className="bg-white dark:bg-zinc-800 border-3 border-black dark:border-white/80 rounded-[18px] p-4 shadow-neo space-y-2">
+              <div className="flex items-center gap-2 text-xs font-black text-neo-purple dark:text-purple-400 uppercase tracking-wider">
+                <Bot className="w-4 h-4 text-black dark:text-white" />
                 <span>Interviewer Prompt:</span>
               </div>
-              <p className="text-base font-black text-black leading-snug">
+              <p className="text-base font-black text-black dark:text-zinc-100 leading-snug">
                 "{currentTurn.followup_question}"
               </p>
             </div>
 
             {/* Candidate Verbal Critique Card */}
-            <div className="bg-cream-100 border-2 border-black rounded-[14px] p-3 shadow-neo-sm">
-              <h4 className="text-xs font-black text-gray-700 uppercase tracking-wider mb-1 flex items-center gap-1">
+            <div className="bg-cream-100 dark:bg-zinc-800/90 border-2 border-black dark:border-white/80 rounded-[14px] p-3 shadow-neo-sm">
+              <h4 className="text-xs font-black text-gray-700 dark:text-zinc-300 uppercase tracking-wider mb-1 flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-neo-orange" /> Reasoning Evaluation:
               </h4>
-              <p className="text-xs font-bold text-gray-800 leading-relaxed">
+              <p className="text-xs font-bold text-gray-800 dark:text-zinc-200 leading-relaxed">
                 {currentTurn.reasoning_critique}
               </p>
             </div>
@@ -100,14 +100,14 @@ export const InterviewerPanel: React.FC<InterviewerPanelProps> = ({
             {/* Checklist items: Complexity & Edge Cases */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold border-2 border-black ${
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold border-2 border-black dark:border-white/80 ${
                   currentTurn.complexity_mentioned
-                    ? 'bg-neo-green/30 text-black'
-                    : 'bg-cream-200 text-gray-600'
+                    ? 'bg-neo-green/30 text-black dark:text-zinc-100'
+                    : 'bg-cream-200 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400'
                 }`}
               >
                 {currentTurn.complexity_mentioned ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-black" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-black dark:text-neo-green" />
                 ) : (
                   <XCircle className="w-3.5 h-3.5 text-gray-400" />
                 )}
@@ -115,14 +115,14 @@ export const InterviewerPanel: React.FC<InterviewerPanelProps> = ({
               </span>
 
               <span
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold border-2 border-black ${
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold border-2 border-black dark:border-white/80 ${
                   currentTurn.edge_case_addressed
-                    ? 'bg-neo-green/30 text-black'
-                    : 'bg-cream-200 text-gray-600'
+                    ? 'bg-neo-green/30 text-black dark:text-zinc-100'
+                    : 'bg-cream-200 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400'
                 }`}
               >
                 {currentTurn.edge_case_addressed ? (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-black" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-black dark:text-neo-green" />
                 ) : (
                   <XCircle className="w-3.5 h-3.5 text-gray-400" />
                 )}
@@ -137,12 +137,12 @@ export const InterviewerPanel: React.FC<InterviewerPanelProps> = ({
             </div>
           </>
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-black/30 rounded-xl bg-white/60">
-            <Bot className="w-8 h-8 text-neo-purple mb-2" />
-            <p className="text-sm font-bold text-gray-800">
+          <div className="h-full flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-black/30 dark:border-white/30 rounded-xl bg-white/60 dark:bg-zinc-800/40">
+            <Bot className="w-8 h-8 text-neo-purple dark:text-purple-400 mb-2" />
+            <p className="text-sm font-bold text-gray-800 dark:text-zinc-200">
               The interviewer is listening.
             </p>
-            <p className="text-xs text-gray-500 max-w-xs mt-1">
+            <p className="text-xs text-gray-500 dark:text-zinc-400 max-w-xs mt-1">
               Explain how you plan to solve the problem. Claude will critique your reasoning and probe your approach.
             </p>
           </div>

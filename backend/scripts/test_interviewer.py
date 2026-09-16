@@ -79,23 +79,57 @@ async def run_interviewer_test():
     print("\n Received Evaluation Report:")
     print(json.dumps(review, indent=2))
 
-    # Part C: Test Blank Code + "I don't know" Transcript
+    # Part C: Test Blank Code + "I don't know" Transcript (Easy, Medium, Hard)
     print("\n" + "-" * 60)
-    print("❌ (3) Testing Blank Code + 'I don't know' Transcript (Candidate Giving Up)...")
+    print("❌ (3) Testing Strict 0-5 Scoring for Unattempted / 'I don't know' across Difficulties...")
+    
+    # Test C1: Easy problem (two-sum) with blank starter code and "I don't know"
     starter_code = "def twoSum(nums: list[int], target: int) -> list[int]:\n    # TODO: Speak your approach out loud first\n    pass\n"
     giveup_transcript = "I don't know how to do this. I'm totally stuck."
     giveup_review = await evaluate_submission(
-        question_id=question_id,
+        question_id="two-sum",
         transcript=giveup_transcript,
         code=starter_code,
         language="python",
     )
-    print("\n Received Evaluation for Blank Code / Give-Up:")
-    print(json.dumps(giveup_review, indent=2))
+    print("\n[Easy Problem Review - Unattempted & 'I don't know']:")
+    print(f"Overall Score: {giveup_review['overall_score']}, Passed: {giveup_review['passed']}, Subscores: {giveup_review['scores']}")
+    assert 0 <= giveup_review["overall_score"] <= 5, f"Easy unattempted score must be 0-5, got {giveup_review['overall_score']}"
     assert giveup_review["passed"] == False, "Candidate should NOT pass with blank code and give up"
-    assert giveup_review["overall_score"] < 30, f"Expected score < 30, got {giveup_review['overall_score']}"
-    assert giveup_review["time_complexity_evaluation"]["verdict"] == "incorrect"
-    print("✅ Blank code & Give-up rejection verification PASSED!")
+    for cat, sc in giveup_review["scores"].items():
+        assert 0 <= sc <= 5, f"Subscore {cat} must be 0-5, got {sc}"
+
+    # Test C2: Medium problem (lru-cache) with blank code
+    med_starter = "class LRUCache:\n    def __init__(self, capacity: int):\n        pass\n"
+    med_review = await evaluate_submission(
+        question_id="lru-cache",
+        transcript="I am thinking about using something but I am not sure.",
+        code=med_starter,
+        language="python",
+    )
+    print("\n[Medium Problem Review - Unattempted Code]:")
+    print(f"Overall Score: {med_review['overall_score']}, Passed: {med_review['passed']}, Subscores: {med_review['scores']}")
+    assert 0 <= med_review["overall_score"] <= 5, f"Medium unattempted score must be 0-5, got {med_review['overall_score']}"
+    assert med_review["passed"] == False, "Medium unattempted should fail"
+    for cat, sc in med_review["scores"].items():
+        assert 0 <= sc <= 5, f"Subscore {cat} must be 0-5, got {sc}"
+
+    # Test C3: Hard problem (trapping-rain-water) with 'I don't know' speech
+    hard_starter = "def trap(height: list[int]) -> int:\n    pass\n"
+    hard_review = await evaluate_submission(
+        question_id="trapping-rain-water",
+        transcript="I have no idea how to solve trapping rain water. I don't know.",
+        code=hard_starter,
+        language="python",
+    )
+    print("\n[Hard Problem Review - 'I don't know' Answer]:")
+    print(f"Overall Score: {hard_review['overall_score']}, Passed: {hard_review['passed']}, Subscores: {hard_review['scores']}")
+    assert 0 <= hard_review["overall_score"] <= 5, f"Hard unattempted/'I don't know' score must be 0-5, got {hard_review['overall_score']}"
+    assert hard_review["passed"] == False, "Hard give-up should fail"
+    for cat, sc in hard_review["scores"].items():
+        assert 0 <= sc <= 5, f"Subscore {cat} must be 0-5, got {sc}"
+
+    print("✅ Strict 0-5 penalty for unattempted / 'I don't know' across Easy, Mid, Hard PASSED!")
 
     # Part D: Test Sub-optimal Brute Force Efficiency (O(N^2) nested loops)
     print("\n" + "-" * 60)
@@ -120,7 +154,7 @@ async def run_interviewer_test():
     print("✅ Efficiency penalty for sub-optimal code verification PASSED!")
 
     print("\n" + "=" * 65)
-    print("🎉 All Interviewer & Efficiency Auditing Tests Passed Successfully!")
+    print("🎉 All Interviewer & 0-5 Strict Scoring Tests Passed Successfully!")
     return True
 
 if __name__ == "__main__":
