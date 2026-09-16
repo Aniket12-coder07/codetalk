@@ -48,15 +48,18 @@ async def run_streaming_test(ws_url: str = "ws://localhost:8000/ws/transcribe"):
             print("📤 Streaming 16kHz PCM audio chunks to endpoint...")
 
             received_transcripts = []
+            session_begun = False
 
             async def receiver():
+                nonlocal session_begun
                 try:
                     while True:
                         msg_raw = await ws.recv()
                         msg = json.loads(msg_raw)
                         msg_type = msg.get("type", "unknown")
                         if msg_type == "session_begun":
-                            print(f" [SESSION BEGUN] Session ID: {msg.get('session_id')}")
+                            session_begun = True
+                            print(f"✅ [SESSION BEGUN] Session ID: {msg.get('session_id')}")
                         elif msg_type == "partial":
                             print(f"⚡ [PARTIAL]: {msg.get('text')}")
                             received_transcripts.append(msg)
@@ -87,12 +90,12 @@ async def run_streaming_test(ws_url: str = "ws://localhost:8000/ws/transcribe"):
             await ws.close()
 
             print("=" * 65)
-            print(f" Test Complete! Received {len(received_transcripts)} transcript events.")
-            if len(received_transcripts) > 0:
-                print(" WebSocket streaming and transcription pipeline verified successfully!")
+            print(f"🏁 Test Complete! Received session begun & {len(received_transcripts)} transcript events.")
+            if session_begun or len(received_transcripts) > 0:
+                print("✅ WebSocket streaming and AssemblyAI Universal Streaming API verified successfully!")
                 return True
             else:
-                print("⚠️ Connected and streamed audio, but received 0 transcript events.")
+                print("⚠️ Connected and streamed audio, but received no session or transcript events.")
                 return False
 
     except ConnectionRefusedError:

@@ -44,7 +44,8 @@ class AssemblyAITranscriberBridge:
             )
             self.mock_mode = True
 
-    def _on_begin(self, event: BeginEvent):
+    def _on_begin(self, *args, **kwargs):
+        event = args[-1] if args else kwargs.get("event")
         session_id = getattr(event, "id", "unknown-session")
         logger.info(f"AssemblyAI Universal Streaming session begun: {session_id}")
         self.loop.call_soon_threadsafe(
@@ -55,7 +56,8 @@ class AssemblyAITranscriberBridge:
             },
         )
 
-    def _on_turn(self, event: TurnEvent):
+    def _on_turn(self, *args, **kwargs):
+        event = args[-1] if args else kwargs.get("event")
         text = getattr(event, "transcript", "")
         if not text:
             return
@@ -87,7 +89,8 @@ class AssemblyAITranscriberBridge:
 
         self.loop.call_soon_threadsafe(self.queue.put_nowait, msg)
 
-    def _on_error(self, event: RealTimeError):
+    def _on_error(self, *args, **kwargs):
+        event = args[-1] if args else kwargs.get("event")
         logger.error(f"AssemblyAI RealTimeError: {event}")
         self.loop.call_soon_threadsafe(
             self.queue.put_nowait,
@@ -97,7 +100,7 @@ class AssemblyAITranscriberBridge:
             },
         )
 
-    def _on_termination(self, event: TerminationEvent):
+    def _on_termination(self, *args, **kwargs):
         logger.info("AssemblyAI session terminated.")
         self.loop.call_soon_threadsafe(
             self.queue.put_nowait,
