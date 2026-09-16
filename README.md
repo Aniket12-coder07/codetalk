@@ -1,131 +1,80 @@
-# 🎙️ CodeTalk — Voice-Based Technical Interview Simulator
+# CodeTalk — Voice-Based Technical Interview Simulator
 
-> **Built for the AssemblyAI Voice Agent Hackathon** (Deadline: Sep 30, 2026)
+> Built for the **AssemblyAI Voice Agent Hackathon** (Deadline: September 30, 2026).
 
-CodeTalk is an interactive mock technical interview platform where candidates explain their Data Structures & Algorithms (DSA) thought process out loud. Spoken audio is transcribed in real-time with **AssemblyAI's Universal Streaming API**, evaluated for verbal reasoning and clarity by an AI interviewer powered by **LangChain + Claude**, and paired with live code authoring in a **Monaco Code Editor**.
-
-Styled with a distinctive **Neo-brutalist** aesthetic (chunky borders, bold drop shadows, category color tabs, cream canvas), CodeTalk replicates the experience of a real Senior Software Engineer probing your thought process.
+CodeTalk is a real-time voice-interactive mock technical interview platform. Candidates speak their algorithmic reasoning out loud, get transcribed in real time via AssemblyAI Universal Streaming, and receive instant follow-up questions, efficiency audits, and comprehensive scorecards from an AI interviewer.
 
 ---
 
-## ⚡ Core Features
+## 🌐 Live Deployments & Links
 
-- **Real-Time Speech-to-Text**: Low-latency streaming transcription using AssemblyAI's Universal Streaming WebSocket API (`RealtimeTranscriber`).
-- **Verbal Reasoning Critique**: LangChain + Anthropic Claude (Claude 3.5 Sonnet) evaluates candidate communication, time/space complexity awareness, and edge-case identification.
-- **Dynamic Interviewer Follow-ups**: Proactive, contextual follow-up questions tailored to what you just spoke (e.g., *"What if the array has duplicates?"*, *"How does your sliding window handle empty strings?"*).
-- **Interactive Code Editor**: Embedded Monaco Editor with syntax highlighting, language templates, and code analysis.
-- **Holistic Code & Speech Review**: Evaluates final submitted code against the verbal explanation to grade alignment, code quality, and efficiency.
-- **Comprehensive Session Report**: End-of-session scorecard with rubric breakdowns and actionable feedback.
-- **Neo-Brutalist Design**: High-contrast, bold flat UI with cream background (`#F5F1E8`), 3-4px black borders, solid offset drop shadows, and vibrant accent tabs.
+* **Live Unified Web App**: [https://frontend-snowy-one-12.vercel.app](https://frontend-snowy-one-12.vercel.app)
+* **Live Backend API**: [https://backend-peach-eight-70.vercel.app](https://backend-peach-eight-70.vercel.app)
+* **Interactive Swagger Docs**: [https://backend-peach-eight-70.vercel.app/docs](https://backend-peach-eight-70.vercel.app/docs)
+* **GitHub Repository**: [https://github.com/Aniket12-coder07/codetalk](https://github.com/Aniket12-coder07/codetalk)
 
 ---
 
-## 🏗️ Architecture
+## 🚀 Features
 
-```
-                                  ┌───────────────────────────────┐
-                                  │   AssemblyAI Streaming API    │
-                                  │  (Universal-Streaming WSS)    │
-                                  └──────────────▲────────────────┘
-                                                 │
-                               Audio Chunks (PCM)│ Transcripts
-                                                 │
-┌──────────────────────┐    WebSocket     ┌──────▼────────────────────────┐
-│  React Frontend      ├─────────────────►│  FastAPI Backend              │
-│  - Web Audio PCM Mic │◄─────────────────┤  - WebSocket Audio Bridge     │
-│  - Monaco Editor     │   Live Text &    │  - Session Orchestration      │
-│  - Neobrutalist UI   │   Follow-ups     └──────────────┬────────────────┘
-└──────────────────────┘                                 │
-                                                         │ Prompts & Code
-                                                         │
-                                                  ┌──────▼────────────────┐
-                                                  │ LangChain + Claude    │
-                                                  │ (Anthropic API)       │
-                                                  └───────────────────────┘
-```
+1. **Real-Time Speech-to-Text**: Powered by AssemblyAI Universal Streaming API (v3) with low-latency audio chunking.
+2. **AI Technical Interviewer**: LangChain + Claude reasoning engine that analyzes verbal problem-solving and asks targeted follow-up questions.
+3. **Monaco Code Editor**: Multi-language support for **Python**, **JavaScript**, **TypeScript**, **Java**, **C++**, and **Go**.
+4. **60 Industry DSA Problems**: Exactly 20 Easy, 20 Medium, and 20 Hard questions loaded with constraints, Big-O targets, and multi-language starter code.
+5. **Strict 0–5 Scoring Penalty**: Submitting unattempted code (empty/boilerplate stubs) or stating "I don't know" strictly awards 0–5 out of 100 across all difficulties.
+6. **Neobrutalist UI with Dark/Light Mode**: High-contrast, dynamic component set with audio waveforms, live speech simulator, and performance scorecards.
 
 ---
 
-## 📁 Repository Layout
+## 💻 Running Locally
 
-```text
-codetalk/
-├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI app & WebSocket audio bridge
-│   │   ├── interviewer.py       # LangChain + Claude interview engine
-│   │   └── transcriber.py       # AssemblyAI RealtimeTranscriber wrapper
-│   ├── scripts/
-│   │   ├── test_streaming.py    # Standalone AssemblyAI streaming test
-│   │   └── test_interviewer.py  # Standalone LangChain + Claude test
-│   ├── data/
-│   │   └── questions.json       # Curated DSA problem bank with rubrics
-│   ├── requirements.txt         # Python dependencies
-│   ├── .env.example             # Template for API credentials
-│   └── .env                     # Local environment file (git-ignored)
-├── frontend/
-│   ├── src/
-│   │   ├── components/ui/       # Neobrutalist buttons, cards, tabs, badges
-│   │   ├── components/          # MicButton, Transcript, MonacoEditor, FeedbackPanel
-│   │   ├── data/questions.json  # DSA problems & starter code
-│   │   ├── App.tsx              # Main interview container
-│   │   └── index.css            # Neobrutalist design tokens & styling
-│   ├── package.json
-│   ├── vite.config.ts
-│   └── tailwind.config.js
-├── .gitignore
-└── README.md
-```
-
----
-
-## 🚀 Quick Start
-
-### 1. Prerequisites
-- Python 3.10+
-- Node.js 18+ and npm
-- AssemblyAI API Key ([Get one here](https://www.assemblyai.com))
-- Anthropic API Key ([Get one here](https://console.anthropic.com))
-
-### 2. Backend Setup
+### 1. Backend (FastAPI + Python)
 ```bash
 cd backend
-python -m venv venv
-# On Windows:
-.\venv\Scripts\activate
-# On macOS/Linux:
-source venv/bin/activate
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# Mac/Linux:
+source .venv/bin/activate
 
 pip install -r requirements.txt
-cp .env.example .env
-# Fill in ASSEMBLYAI_API_KEY and ANTHROPIC_API_KEY in backend/.env
-
-# Run FastAPI server
-uvicorn app.main:app --reload --port 8000
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-### 3. Frontend Setup
+### 2. Frontend (React + Vite)
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open `http://localhost:5173` to start your mock interview.
+Open [http://127.0.0.1:5173](http://127.0.0.1:5173) in your browser.
 
 ---
 
-## 🧪 Standalone Verification
+## 📁 Project Structure
 
-- **Step 2 (AssemblyAI STT)**:
-  ```bash
-  python backend/scripts/test_streaming.py
-  ```
-- **Step 3 (Claude Interviewer)**:
-  ```bash
-  python backend/scripts/test_interviewer.py
-  ```
-
----
-
-## 📄 License
-MIT License. Built for the AssemblyAI Voice Agent Hackathon 2026.
+```text
+CodeTalk/
+├── backend/
+│   ├── app/
+│   │   ├── main.py            # FastAPI endpoints & WebSocket server
+│   │   ├── transcriber.py     # AssemblyAI streaming audio bridge
+│   │   └── interviewer.py     # AI evaluator, Big-O audit & 0-5 scoring
+│   ├── data/
+│   │   └── questions.json     # 60 LeetCode-style industry problems
+│   ├── scripts/
+│   │   └── test_interviewer.py # Standalone verification tests
+│   ├── requirements.txt
+│   ├── Dockerfile
+│   └── vercel.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/        # Neobrutalist UI components
+│   │   ├── data/              # 60 questions synced for instant UI preview
+│   │   ├── App.tsx            # Main interview dashboard
+│   │   └── index.css          # Tailwind + Neobrutalism theme
+│   ├── package.json
+│   ├── tailwind.config.js
+│   └── vercel.json            # Unified reverse-proxy rewrite rules
+└── render.yaml                # Free Render.com deployment blueprint
+```
